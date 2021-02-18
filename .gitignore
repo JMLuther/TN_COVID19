@@ -11,6 +11,11 @@
 # Example code in package build process
 *-Ex.R
 
+# TNDOH AND covidtracking data:
+*.xlsx
+*.XLSX
+*.csv
+
 # Output files from R CMD build
 /*.tar.gz
 
