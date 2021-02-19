@@ -55,6 +55,7 @@ theme_set(theme_bw() +
 ```
 
 *Last updated: `r Sys.time()`*
+All source documents for this report can be found on [github](https://github.com/JMLuther/TN_COVID19)
 
 # **Disclaimer**
 
