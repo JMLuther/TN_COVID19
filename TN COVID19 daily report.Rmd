@@ -14,6 +14,7 @@ output:
     code_folding: hide 
     number_sections: FALSE
     fig_caption: FALSE
+google_analytics: "G-1T1LWRLETY"
 ---
 
 ```{=html}
