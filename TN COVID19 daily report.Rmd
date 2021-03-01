@@ -9,6 +9,8 @@ author: "Matt Luther (@DrJMLuther, https://twitter.com/DrJMLuther)"
 date: "`r Sys.Date()`"
 output:
   html_document:
+    includes: 
+      in_header: GA_script.html
     toc: TRUE
     toc_float: TRUE
     code_folding: hide 
