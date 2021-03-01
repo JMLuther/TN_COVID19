@@ -7,14 +7,14 @@
 
 # User-specific files
 .Ruserdata
+GA_script.html
 
 # Example code in package build process
 *-Ex.R
 
 # TNDOH AND covidtracking data:
-*.xlsx
-*.XLSX
-*.csv
+data_tndoh/*
+data_covidtracking/*
 
 # Output files from R CMD build
 /*.tar.gz
