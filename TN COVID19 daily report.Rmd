@@ -416,17 +416,7 @@ tndoh_demographics <-
                        levels = c("White", "Black or African American", "Asian",  "Other/Multiracial", "Pending",  "American Indian or Alaska Native", "Native Hawaiian or Other Pacific Islander"),
                        labels = c("White", "Black", "Asian",  "Other", "Pending",  "Am.Indian/Alaskan", "Hawaiian/Pacific")))
 
-
-# US DATA FROM THE COVIDTRACKING PROJECT ####
-covus_currentdata <- readr::read_csv(here::here("data_covidtracking/daily.csv"))
-covus_currentdata <-
-  covus_currentdata |> 
-  filter(state %in% state.abb,
-         !state %in% c("AK", "HI") ) |> 
-  mutate(date = lubridate::ymd(date))
-
-# covus_currentdata <- readRDS(here::here("data_covidtracking/covus_current.rds"))
-
+# US AND STATE DATA ####
 # us_data <- tigris::states(cb = TRUE)
 # us_data <-   sf::st_as_sf(us_data)
 # names(us_data) <- tolower(names(us_data))
@@ -454,57 +444,130 @@ covus_currentdata <-
 #   filter(pop_year == 2019) |> 
 #   filter(region %in% state.name)
 
-covus_currentdata <-
-  covus_currentdata |> 
-  left_join(us_data,
-            by = c("state" = "stusps")) |> 
-    left_join(state_pop_2019, by = c("name" = "region")) |> 
-  mutate(test_density_pct = total/pop_estimate*100,
-         case_density_pct = positive/pop_estimate*100)  
 
-covus_currentdata <-
-  covus_currentdata |>
+# US DATA FROM THE COVIDTRACKING PROJECT ####
+# COVIDTRACKING PROJECT QUIT TRACKING DATA ON MARCH 7, 2021; 
+# DATA SOURCE CHANGED TO CDD; TEST POSITIVITY RATES NOT AVAILABLE THERE
+# covus_currentdata <- readr::read_csv(here::here("data_covidtracking/daily.csv"))
+# covus_currentdata <-
+#   covus_currentdata |> 
+#   filter(state %in% state.abb,
+#          !state %in% c("AK", "HI") ) |> 
+#   mutate(date = lubridate::ymd(date))
+
+# covus_currentdata <- readRDS(here::here("data_covidtracking/covus_current.rds"))
+# covus_currentdata <-
+#   covus_currentdata |> 
+#   left_join(us_data,
+#             by = c("state" = "stusps")) |> 
+#     left_join(state_pop_2019, by = c("name" = "region")) |> 
+#   mutate(test_density_pct = total/pop_estimate*100,
+#          case_density_pct = positive/pop_estimate*100)  
+# 
+# covus_currentdata <-
+#   covus_currentdata |>
+#   group_by(state) |> 
+#   arrange(date) |> 
+#   mutate(new_cases_state_7davg = round(RcppRoll::roll_meanr(positiveIncrease, 7), 1),
+#          new_deaths_state_7davg = round(RcppRoll::roll_meanr(deathIncrease, 7), 1),
+#          new_deaths_state_7davg_100k = new_deaths_state_7davg/pop_estimate*100000,
+#          new_testpos_pct   = round(positiveIncrease/totalTestResultsIncrease*100, 1),
+#          new_testpos_pct_7davg   = round(RcppRoll::roll_meanr(positiveIncrease, 7)/RcppRoll::roll_meanr(totalTestResultsIncrease, 7)*100, 1),
+#          new_cases_state_7davg_100k = new_cases_state_7davg/pop_estimate*100000
+#   ) |> 
+#   ungroup()
+# 
+# covus_currentdata <-
+#   covus_currentdata |>
+#   group_by(date) |> 
+#   mutate(rank_newcases7davg = rank(-new_cases_state_7davg_100k)) |> 
+#   ungroup()
+# 
+# state_tbl <- 
+#   tibble(state_name = state.name, 
+#          state = state.abb)
+# 
+# covus_currentdata_2163 <-
+#   covus_currentdata |> 
+#   mutate(geometry = st_transform(geometry, 2163)) |> 
+#     left_join(state_tbl, by = "state") |> 
+#   mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr>
+#                      <tr><td>New Cases/100k (7d Avg): %s</td></tr>
+#                      <tr><td>Test %% Positive (7d Avg): %1.1f%%</td></tr>
+#                      <tr><td>State Rank (Cases/100k 7d Avg): %s</td></tr>
+#                      <tr><td>Total Cases: %s</td></tr>
+#                      <tr><td>Total Deaths: %s</td></tr>
+#                      <tr><td>New Deaths/d/100k (7d Avg): %1.2f</td></tr>
+#                      <tr><td>CFR: %1.2f%%</td></tr>
+#                      <tr><td>Case Density: %1.1f%% of pop.</td></tr>
+#                      <tr><td>Testing Density: %1.1f%% of pop.</td></tr>", 
+#                      toupper(state_name),  paste0(month.name[lubridate::month(date)], " ", lubridate::mday(date)),
+#                      comma(new_cases_state_7davg_100k, digits = 1), new_testpos_pct_7davg,  rank_newcases7davg, comma(positive, digits = 0),
+#                      comma(death, digits = 0), new_deaths_state_7davg_100k, death/positive*100, case_density_pct, test_density_pct)) 
+
+# US DATA FROM THE CDC ####
+# NOTE: COVIDTRACKING PROJECT QUIT TRACKING DATA ON MARCH 7, 2021; 
+# TEST POSITIVITY RATES NOT AVAILABLE THERE
+# CDC DATA
+cdc_currentdata <- readr::read_csv(here::here("data_cdc/cdc_state_info.csv"))
+names(state.name) <- state.abb
+cdc_currentdata <-
+  cdc_currentdata %>% 
+  filter(state %in% state.abb,
+         !state %in% c("AK", "HI") ) %>% 
+  mutate(date = lubridate::mdy(submission_date),
+         region = state.name[state])
+
+
+cdc_currentdata <-
+  cdc_currentdata |> 
+  # left_join(us_data,
+  #           by = c("state" = "stusps")) |> 
+  left_join(state_pop_2019, by = "region") 
+
+
+cdc_currentdata <-
+  cdc_currentdata |>
   group_by(state) |> 
   arrange(date) |> 
-  mutate(new_cases_state_7davg = round(RcppRoll::roll_meanr(positiveIncrease, 7), 1),
-         new_deaths_state_7davg = round(RcppRoll::roll_meanr(deathIncrease, 7), 1),
+  mutate(case_density_pct = tot_cases/pop_estimate*100,
+         new_cases_state_7davg = round(RcppRoll::roll_meanr(new_case, 7), 1),
+         new_deaths_state_7davg = round(RcppRoll::roll_meanr(new_death, 7), 1),
          new_deaths_state_7davg_100k = new_deaths_state_7davg/pop_estimate*100000,
-         new_testpos_pct   = round(positiveIncrease/totalTestResultsIncrease*100, 1),
-         new_testpos_pct_7davg   = round(RcppRoll::roll_meanr(positiveIncrease, 7)/RcppRoll::roll_meanr(totalTestResultsIncrease, 7)*100, 1),
          new_cases_state_7davg_100k = new_cases_state_7davg/pop_estimate*100000
   ) |> 
   ungroup()
 
-covus_currentdata <-
-  covus_currentdata |>
+cdc_currentdata <-
+  cdc_currentdata |>
   group_by(date) |> 
   mutate(rank_newcases7davg = rank(-new_cases_state_7davg_100k)) |> 
   ungroup()
 
 
 
-state_tbl <- 
-  tibble(state_name = state.name, 
+state_tbl <-
+  tibble(state_name = state.name,
          state = state.abb)
 
 
-covus_currentdata_2163 <-
-  covus_currentdata |> 
+cdc_currentdata_2163 <-
+  cdc_currentdata |> 
+  filter(date == max(date)) |>
+  left_join(us_data, by = c("state" = "stusps")) |> 
   mutate(geometry = st_transform(geometry, 2163)) |> 
-    left_join(state_tbl, by = "state") |> 
+  left_join(state_tbl, by = "state") |> 
   mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr>
                      <tr><td>New Cases/100k (7d Avg): %s</td></tr>
-                     <tr><td>Test %% Positive (7d Avg): %1.1f%%</td></tr>
                      <tr><td>State Rank (Cases/100k 7d Avg): %s</td></tr>
                      <tr><td>Total Cases: %s</td></tr>
                      <tr><td>Total Deaths: %s</td></tr>
                      <tr><td>New Deaths/d/100k (7d Avg): %1.2f</td></tr>
                      <tr><td>CFR: %1.2f%%</td></tr>
-                     <tr><td>Case Density: %1.1f%% of pop.</td></tr>
-                     <tr><td>Testing Density: %1.1f%% of pop.</td></tr>", 
+                     <tr><td>Case Density: %1.1f%% of pop.</td></tr>",
                      toupper(state_name),  paste0(month.name[lubridate::month(date)], " ", lubridate::mday(date)),
-                     comma(new_cases_state_7davg_100k, digits = 1), new_testpos_pct_7davg,  rank_newcases7davg, comma(positive, digits = 0),
-                     comma(death, digits = 0), new_deaths_state_7davg_100k, death/positive*100, case_density_pct, test_density_pct)) 
+                     comma(new_cases_state_7davg_100k, digits = 1), rank_newcases7davg, comma(tot_cases, digits = 0),
+                     comma(tot_death, digits = 0), new_deaths_state_7davg_100k, tot_death/tot_cases*100, case_density_pct)) 
 
 
 
@@ -1452,9 +1515,11 @@ cowplot::plot_grid(  title_tnsdc, pl_newcases,pl_deaths, pl_cases,pl_cfr,
 
 ```
 
-# **US Data from COVID Tracking Project**
+# **US Data from the CDC**
 
-Testing and Case data for these maps are taken from the [COVID Tracking project](https://covidtracking.com/data#state-tn), and the 2019 state population estimates are taken from the [United States Census Bureau](https://www.census.gov/programs-surveys/popest.html).
+Case data for these maps are taken from the [CDC](https://covid.cdc.gov/covid-data-tracker/#cases_casesper100klast7days). and the 2019 state population estimates are taken from the [United States Census Bureau](https://www.census.gov/programs-surveys/popest.html).
+
+Formerly I used the [COVID Tracking project](https://covidtracking.com/data#state-tn), but this site is no longer updating data as of March 7, 2021.
 
 ## New Cases
 
@@ -1462,10 +1527,10 @@ Testing and Case data for these maps are taken from the [COVID Tracking project]
 
 ```{r us_newcases, fig.height=10, fig.width=12}
 
-max_newcaserate <- max(covus_currentdata_2163$new_cases_state_7davg_100k[covus_currentdata_2163$date == max(covus_currentdata_2163$date)], na.rm = T)
+max_newcaserate <- max(cdc_currentdata_2163$new_cases_state_7davg_100k[cdc_currentdata_2163$date == max(cdc_currentdata_2163$date)], na.rm = T)
                                                   
 pl_us_cases_100k <-
-  covus_currentdata_2163 |> 
+  cdc_currentdata_2163 |> 
   filter(date == max(date)) |> 
   ggplot(aes(geometry = geometry,
              fill = new_cases_state_7davg_100k)) |> \(x) x +
@@ -1488,16 +1553,16 @@ ggiraph::girafe(code = print( pl_us_cases_100k))
 ## US Heatmap
 
 ```{r state_heatmap, fig.height=8, fig.width=10}
-max_newcaserate_alldates <- max(covus_currentdata_2163$new_cases_state_7davg_100k, na.rm = T)
+max_newcaserate_alldates <- max(cdc_currentdata$new_cases_state_7davg_100k, na.rm = T)
 
 state_order <- 
-  covus_currentdata_2163 |> 
+  cdc_currentdata_2163 |> 
   filter(date == max(date)) |> 
   mutate(state_bynewcases = reorder(state, new_cases_state_7davg_100k)) |> 
   select(state, state_bynewcases)
 
 us_heatmap_100k <-
-  covus_currentdata_2163 |> 
+  cdc_currentdata |> 
   left_join(state_order, by = "state") |> 
   filter(date >= lubridate::ymd("2020-04-01")) |> 
   ggplot(aes(x = date,
