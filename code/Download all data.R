@@ -38,6 +38,12 @@ download.file(url = "https://www.tn.gov/content/dam/tn/health/documents/cedep/no
               destfile = here::here("data_tndoh/COVID_VACCINE_AGE_GROUPS.XLSX"))
 
 
+# # US DATA FROM THE COVIDTRACKING PROJECT ####
+# download.file(url = "https://covidtracking.com/api/v1/states/daily.csv",
+#               destfile = here::here("data_covidtracking/daily.csv"))
+
+
 # US DATA FROM THE COVIDTRACKING PROJECT ####
-download.file(url = "https://covidtracking.com/api/v1/states/daily.csv",
-              destfile = here::here("data_covidtracking/daily.csv"))
+download.file(url = "https://data.cdc.gov/api/views/9mfq-cb36/rows.csv?accessType=DOWNLOAD",
+              destfile = here::here("data_cdc/cdc_state_info.csv"))
+              
