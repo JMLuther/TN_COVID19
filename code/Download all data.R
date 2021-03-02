@@ -39,6 +39,7 @@ download.file(url = "https://www.tn.gov/content/dam/tn/health/documents/cedep/no
 
 
 # # US DATA FROM THE COVIDTRACKING PROJECT ####
+# deprecated 3/2/2021; site no longer plans to update data
 # download.file(url = "https://covidtracking.com/api/v1/states/daily.csv",
 #               destfile = here::here("data_covidtracking/daily.csv"))
 
