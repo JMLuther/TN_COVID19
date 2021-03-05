@@ -76,8 +76,10 @@ tndoh_age %>%
        title = "New Case Rate, by Age (cases/100k within age group)") +
   scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) 
 
+tndoh_age$age.f %>% levels
 tndoh_age %>% 
-  filter(date >= lubridate::ymd("2020-04-01")) %>% 
+  filter(date >= lubridate::ymd("2021-01-01"),
+         age.f %in% c("51-60", "61-70", "71-80", "81+")) %>% 
   ggplot(aes(x = date,
              y = age.f,
              height = ar_new_deaths_100k_7davg,
@@ -89,7 +91,8 @@ tndoh_age %>%
   scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0))
 
 tndoh_age %>% 
-  filter(date >= lubridate::ymd("2020-04-01")) %>% 
+  filter(date >= lubridate::ymd("2021-02-01"),
+         age.f %in% c("51-60", "61-70", "71-80", "81+")) %>% 
   ggplot(aes(x = date,
              y = ar_new_deaths_100k_7davg,
              fill = age.f)) +
@@ -98,23 +101,24 @@ tndoh_age %>%
   labs(x = NULL, y = NULL,
        title = "Average Daily Deaths, per 100k within age group") +
   scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) +
-  facet_wrap(~age.f, nrow = 1, scales = "free_y") +
+  facet_wrap(~age.f, nrow = 1) +
+  # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
   theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
 
 
 ## US HEATMAP WITH CLUSTERING ####
 library(gplots)  
 library(dtwclust)
-max_newcaserate_alldates <- max(covus_currentdata_2163$new_cases_state_7davg_100k, na.rm = T)
+max_newcaserate_alldates <- max(cdc_currentdata$new_cases_state_7davg_100k, na.rm = T)
   
 state_order <- 
-  covus_currentdata_2163 %>% 
+  cdc_currentdata %>% 
   filter(date == max(date)) %>% 
   mutate(state_bynewcases = reorder(state, new_cases_state_7davg_100k)) %>% 
   select(state, state_bynewcases)
 
 data_for_usheatmap <- 
-  covus_currentdata_2163 %>% 
+  cdc_currentdata %>% 
   left_join(state_order, by = "state") %>% 
   filter(date >= lubridate::ymd("2020-04-01")) 
 
