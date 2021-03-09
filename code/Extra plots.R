@@ -76,7 +76,7 @@ tndoh_age %>%
        title = "New Case Rate, by Age (cases/100k within age group)") +
   scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) 
 
-tndoh_age$age.f %>% levels
+# tndoh_age$age.f %>% levels
 tndoh_age %>% 
   filter(date >= lubridate::ymd("2021-01-01"),
          age.f %in% c("51-60", "61-70", "71-80", "81+")) %>% 

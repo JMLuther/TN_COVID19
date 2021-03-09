@@ -513,8 +513,8 @@ cdc_currentdata <- readr::read_csv(here::here("data_cdc/cdc_state_info.csv"))
 names(state.name) <- state.abb
 cdc_currentdata <-
   cdc_currentdata %>% 
-  filter(state %in% state.abb,
-         !state %in% c("AK", "HI") ) %>% 
+  filter(state %in% state.abb) %>% 
+         # !state %in% c("AK", "HI") ) %>% 
   mutate(date = lubridate::mdy(submission_date),
          region = state.name[state])
 
@@ -1531,7 +1531,8 @@ max_newcaserate <- max(cdc_currentdata_2163$new_cases_state_7davg_100k[cdc_curre
                                                   
 pl_us_cases_100k <-
   cdc_currentdata_2163 |> 
-  filter(date == max(date)) |> 
+  filter(date == max(date),
+         !state %in% c("AK", "HI")) |> 
   ggplot(aes(geometry = geometry,
              fill = new_cases_state_7davg_100k)) |> \(x) x +
 # pl_us_cases_100k <-
