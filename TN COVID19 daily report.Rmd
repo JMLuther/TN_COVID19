@@ -35,6 +35,7 @@ library(leaflet)
 library(leafpop)
 library(formattable)
 library(ggiraph)
+library(urbnmapr) # change to include AK/HI on map
 
 # library(covdata)
 
@@ -157,7 +158,14 @@ tndoh_daily <-
 tndoh_daily[tndoh_daily$date %in% lubridate::ymd(c("2020-07-13", "2020-07-11", "2020-06-12")), "new_tests"] <- NA_real_
 
 # STATE POPULATION DATA ####
-us_data <-  readRDS(here::here("data_rds/us_data.rds"))
+# us_data <-  readRDS(here::here("data_rds/us_data.rds"))
+us_data <- get_urbn_map("states", sf = TRUE)
+us_data <- 
+  us_data %>% 
+  mutate(name = state_name,
+         stusps = state_abbv)
+
+
 # state_pop <- readxl::read_excel(here::here("state_populations.xlsx"))
 # state_pop$region <- gsub("\\.", "", state_pop$region)
 # state_pop <-
@@ -554,9 +562,9 @@ state_tbl <-
 cdc_currentdata_2163 <-
   cdc_currentdata |> 
   filter(date == max(date)) |>
-  left_join(us_data, by = c("state" = "stusps")) |> 
+  left_join(us_data, by = c("state" = "stusps"))  |>
   mutate(geometry = st_transform(geometry, 2163)) |> 
-  left_join(state_tbl, by = "state") |> 
+  left_join(state_tbl, by = c("state", "state_name")) |>
   mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr>
                      <tr><td>New Cases/100k (7d Avg): %s</td></tr>
                      <tr><td>State Rank (Cases/100k 7d Avg): %s</td></tr>
@@ -568,8 +576,6 @@ cdc_currentdata_2163 <-
                      toupper(state_name),  paste0(month.name[lubridate::month(date)], " ", lubridate::mday(date)),
                      comma(new_cases_state_7davg_100k, digits = 1), rank_newcases7davg, comma(tot_cases, digits = 0),
                      comma(tot_death, digits = 0), new_deaths_state_7davg_100k, tot_death/tot_cases*100, case_density_pct)) 
-
-
 
 # county
 tndoh_vax_county <- readxl::read_excel(here::here("data_tndoh/COVID_VACCINE_COUNTY_SUMMARY.XLSX"),
@@ -1531,8 +1537,7 @@ max_newcaserate <- max(cdc_currentdata_2163$new_cases_state_7davg_100k[cdc_curre
                                                   
 pl_us_cases_100k <-
   cdc_currentdata_2163 |> 
-  filter(date == max(date),
-         !state %in% c("AK", "HI")) |> 
+  filter(date == max(date)) |> 
   ggplot(aes(geometry = geometry,
              fill = new_cases_state_7davg_100k)) |> \(x) x +
 # pl_us_cases_100k <-
