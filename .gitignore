@@ -42,3 +42,13 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# data files:
+/data_tndoh/COVID_VACCINE_AGE_GROUPS.XLSX
+/data_tndoh/COVID_VACCINE_COUNTY_SUMMARY.XLSX
+/data_tndoh/COVID_VACCINE_STATE_SUMMARY.XLSX
+/data_tndoh/Public-Dataset-Age.xlsx
+/data_tndoh/Public-Dataset-County-New.xlsx
+/data_tndoh/Public-Dataset-Daily-Case-Info.xlsx
+/data_tndoh/Public-Dataset-RaceEthSex.xlsx
+
