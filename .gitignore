@@ -53,3 +53,5 @@ vignettes/*.pdf
 /data_tndoh/Public-Dataset-Daily-Case-Info.xlsx
 /data_tndoh/Public-Dataset-RaceEthSex.xlsx
 
+/data_cdc/cdc_state_info.csv
+
