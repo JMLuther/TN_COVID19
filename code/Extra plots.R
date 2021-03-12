@@ -1,3 +1,51 @@
+tndoh_age %>% 
+  filter(date >= lubridate::ymd("2021-01-01"),
+         age.f %in% c("51-60", "61-70", "71-80", "81+")) %>% 
+  ggplot(aes(x = date,
+             y = age.f,
+             height = ar_new_deaths_100k_7davg,
+             fill = age.f)) +
+  ggridges::geom_ridgeline(alpha = 0.5) +
+  theme(legend.position = "none") +
+  labs(x = NULL, y = NULL,
+       title = "New Deaths, by Age (per 100k within age group)") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0))
+
+pl_deaths_age <-
+  tndoh_age %>% 
+  filter(date >= lubridate::ymd("2021-01-01"),
+         age.f %in% c("51-60", "61-70", "71-80", "81+")) %>% 
+  ggplot(aes(x = date,
+             y = ar_new_deaths_100k_7davg,
+             fill = age.f)) +
+  geom_area(alpha = 0.5) +
+  theme(legend.position = "none") +
+  labs(x = NULL, y = NULL,
+       title = "Average Daily Deaths, per 100k within age group") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) +
+  facet_wrap(~age.f, nrow = 1) +
+  # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
+  theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
+
+pl_cases_age <-
+  tndoh_age %>% 
+  filter(date >= lubridate::ymd("2021-01-01"),
+         age.f %in% c("51-60", "61-70", "71-80", "81+")) %>% 
+  ggplot(aes(x = date,
+             y = ar_new_cases_100k_7davg,
+             fill = age.f)) +
+  geom_area(alpha = 0.5) +
+  theme(legend.position = "none") +
+  labs(x = NULL, y = NULL,
+       title = "Average New Cases, per 100k within age group") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) +
+  facet_wrap(~age.f, nrow = 1) +
+  # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
+  theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
+cowplot::plot_grid(pl_cases_age,
+                   pl_deaths_age,
+                   nrow = 2)
+
 # AGE HEATMAP ####
 max_newcaserate_byage <- max(tndoh_age$ar_new_cases_100k_7davg, na.rm = T)
 ar_newcase_heatmap_100k <-
@@ -76,34 +124,6 @@ tndoh_age %>%
        title = "New Case Rate, by Age (cases/100k within age group)") +
   scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) 
 
-# tndoh_age$age.f %>% levels
-tndoh_age %>% 
-  filter(date >= lubridate::ymd("2021-01-01"),
-         age.f %in% c("51-60", "61-70", "71-80", "81+")) %>% 
-  ggplot(aes(x = date,
-             y = age.f,
-             height = ar_new_deaths_100k_7davg,
-             fill = age.f)) +
-  ggridges::geom_ridgeline(alpha = 0.5) +
-  theme(legend.position = "none") +
-  labs(x = NULL, y = NULL,
-       title = "New Deaths, by Age (per 100k within age group)") +
-  scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0))
-
-tndoh_age %>% 
-  filter(date >= lubridate::ymd("2021-02-01"),
-         age.f %in% c("51-60", "61-70", "71-80", "81+")) %>% 
-  ggplot(aes(x = date,
-             y = ar_new_deaths_100k_7davg,
-             fill = age.f)) +
-  geom_area(alpha = 0.5) +
-  theme(legend.position = "none") +
-  labs(x = NULL, y = NULL,
-       title = "Average Daily Deaths, per 100k within age group") +
-  scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) +
-  facet_wrap(~age.f, nrow = 1) +
-  # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
-  theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
 
 
 ## US HEATMAP WITH CLUSTERING ####
