@@ -60,6 +60,13 @@ theme_set(theme_bw() +
 *Last updated: `r Sys.time()`*
 All source documents for this report can be found on [github](https://github.com/JMLuther/TN_COVID19)
 
+**VACCINE SIGN-UP**  
+
+If you are 16 years old or older, you are elgible to get your vaccine in Nashville (for free)- Go to the [Metro Public health site](https://www.asafenashville.org/) and click the link to schedule your appointment!
+
+
+
+
 # **Disclaimer**
 
 The Tennessee state information is simply a visual summary of the data directly downloaded from [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov.html), by date reported (rather than date of test). I do not attempt to model, make predictions, or give advice on how to use this data. If you want that sort of thing, go to the [VUMC Health Policy site](https://www.vumc.org/health-policy/covid-19-advisory-memos), which has developed some very good local models and Advisory Memos for Tennessee.
