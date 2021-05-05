@@ -615,6 +615,7 @@ pl_new_tnsdc <-
   pivot_longer(cols = c(new_cases, new_hosp, new_deaths),
                names_to = "var", 
                values_to = "value") |> 
+  # filter(date > lubridate::ymd("2021-01-01")) |>
   ggplot(aes(x = date)) |> \(x) x +
   ggiraph::geom_col_interactive(aes(y = value, fill = var, tooltip = tt_daily, data_id = date), alpha = 0.5,
                                position = "identity") +
