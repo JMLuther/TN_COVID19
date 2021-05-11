@@ -69,6 +69,8 @@ If you are 16 years old or older, you are elgible to get your vaccine in Nashvil
 
 # **Disclaimer**
 
+*Update 5/10/2021* New Cases now reported only by the date of detection. Will update with details once it becomes clear how these results will be mixed with the prior reporting method (date of report).
+
 The Tennessee state information is simply a visual summary of the data directly downloaded from [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov.html), by date reported (rather than date of test). I do not attempt to model, make predictions, or give advice on how to use this data. If you want that sort of thing, go to the [VUMC Health Policy site](https://www.vumc.org/health-policy/covid-19-advisory-memos), which has developed some very good local models and Advisory Memos for Tennessee.
 
 For the most up-to-date numbers visit the [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov.html) or local health department sites. In particular, the [Metro. Nashville site](https://www.asafenashville.org/) has a very nice summary- and note that their report of daily cases usually precedes the State Health Dept, due to the verification process and assignment of county of residence at the state.
