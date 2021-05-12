@@ -60,11 +60,13 @@ theme_set(theme_bw() +
 *Last updated: `r Sys.time()`*
 All source documents for this report can be found on [github](https://github.com/JMLuther/TN_COVID19)
 
-**VACCINE SIGN-UP**  
+# **VACCINE SIGN-UP**  
 
-If you are 16 years old or older, you are elgible to get your vaccine in Nashville (for free)- Go to the [Metro Public health site](https://www.asafenashville.org/) and click the link to schedule your appointment!
+If you are **12** years old or older, you are eligible to get your vaccine in Nashville (for free)- Go to one of these sites to sign up:
 
-
+  *  [Metro Public health site](https://www.asafenashville.org/)  
+  *  [Teamup calendar of community sites](https://teamup.com/ks48yq728y9por8a6q)  
+  *  [Vanderbilt Medical Center sign-up](https://covid-vaccine.app.vumc.org/schedule/#/availability) with sites in Nashville (12+), Shelbyville (18+), and Tullahoma (18+)  
 
 
 # **Disclaimer**
@@ -93,7 +95,8 @@ Other useful sites for following trends in Tennessee and nationally:
 
 # **TN Dept of Health Data**
 
-These data are taken directly from the [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html). I am using these data, by date of report, rather than date of test, for consistency.
+These data are taken directly from the [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html). 
+Previously the DOH reported results by date of report, rather than date of test. They transitioned to reporting results by Date of Test on 5/10/2021, although it is not clear if data reported prior to that will be cleaned up. 
 
 ```{r import_tnsdc, message=FALSE, warning=FALSE, include=FALSE}
 # file downloads and processes all data
@@ -619,12 +622,15 @@ pl_new_tnsdc <-
                values_to = "value") |> 
   # filter(date > lubridate::ymd("2021-01-01")) |>
   ggplot(aes(x = date)) |> \(x) x +
+  geom_rect(aes(xmin = max(tndoh_daily$date)-7, xmax = max(tndoh_daily$date) + 1, ymin = -Inf, ymax = Inf),
+            fill = "grey", alpha = 0.2) +
   ggiraph::geom_col_interactive(aes(y = value, fill = var, tooltip = tt_daily, data_id = date), alpha = 0.5,
                                position = "identity") +
   geom_line(aes(y = new_cases_7davg),color = "steelblue", size = 1) +
   labs(x=NULL,
        y="Results by day reported",
        subtitle = "Results by Day, New (Total)",
+       caption = "Results within the past 7-10 days (shaded period)\nmay not be fully reported",
        fill = NULL) +
   scale_fill_manual(values = c("steelblue",
                                "red",
