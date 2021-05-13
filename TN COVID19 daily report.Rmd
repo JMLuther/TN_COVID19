@@ -613,10 +613,12 @@ tndoh_vax_county <-
 ## Testing Update- *Interactive*
 
 *interactive version- mouse/hover over bars for details*
+*Limited to Last 4 months for better detail*
 
 ```{r interactive_daily, fig.width=8, message=FALSE, warning=FALSE}
 pl_new_tnsdc <-
   tndoh_daily |>
+    filter(date >=  max(date) - 120) |>
   pivot_longer(cols = c(new_cases, new_hosp, new_deaths),
                names_to = "var", 
                values_to = "value") |> 
@@ -668,6 +670,7 @@ ggiraph::girafe(ggobj = pl_new_tnsdc,
 # PLOTS ####
 pl_tests_new <-
   tndoh_daily |>
+  # filter(date - 90) |>
   ggplot(aes(x=date)) |> \(x) x +
   geom_col(aes(y = new_tests, fill = "Tests"), alpha = 0.5) +
   geom_col(aes(y = new_cases, fill = "Cases"), alpha = 0.7) +
