@@ -108,9 +108,9 @@ Previously the DOH reported results by date of report, rather than date of test.
                 mode = 'wb',
                 destfile = here::here("data_tndoh/Public-Dataset-Age.xlsx"))
   newchecksum <- tools::md5sum(filename)
-  ifelse(oldchecksum == newchecksum, 
+  ifelse(oldchecksum == newchecksum,
          "TNDOH data is Unchanged since last download",
-         source(here::here("code/Download all data.R"))) 
+         source(here::here("code/Download all data.R")))
 }
 
 # FORCE UPDATE:
@@ -612,7 +612,7 @@ tndoh_vax_county <-
 
 ## Testing Update- *Interactive*
 
-*interactive version- mouse/hover over bars for details*
+*interactive version- mouse/hover over bars for details.*  
 *Limited to Last 4 months for better detail*
 
 ```{r interactive_daily, fig.width=8, message=FALSE, warning=FALSE}
