@@ -163,10 +163,14 @@ names(tndoh_daily) <- tolower(names(tndoh_daily))
 
 # remove the new_test results which our bulk reported or adjusted
 tndoh_daily <-
-  tndoh_daily |> 
-  mutate(date = lubridate::ymd(date)) |> 
+  tndoh_daily %>%  
+  mutate(date = lubridate::ymd(date)) %>%  
   arrange(date) 
-  
+
+tndoh_daily <- 
+  tndoh_daily %>% 
+  filter(date > lubridate::ymd("2020-01-01")) # data error  introduced; filter out erroneous entry for 1960-01-01
+   
 tndoh_daily[tndoh_daily$date %in% lubridate::ymd(c("2020-07-13", "2020-07-11", "2020-06-12")), "new_tests"] <- NA_real_
 
 # STATE POPULATION DATA ####
@@ -181,7 +185,7 @@ us_data <-
 # state_pop <- readxl::read_excel(here::here("state_populations.xlsx"))
 # state_pop$region <- gsub("\\.", "", state_pop$region)
 # state_pop <-
-#   state_pop |>
+#   state_pop %>% 
 #   pivot_longer(cols = -c(region, census_2010),
 #                names_to = "pop_year",
 #                names_prefix = "pop_",
@@ -190,8 +194,8 @@ us_data <-
 
 state_pop <- readRDS( here::here("data_rds/state_pop.rds"))
 state_pop_2019 <-
-  state_pop |> 
-  filter(pop_year == 2019) |> 
+  state_pop %>%  
+  filter(pop_year == 2019) %>%  
   filter(region %in% state.name)
 TN_pop2019 <- state_pop_2019$pop_estimate[state_pop_2019$region == "Tennessee"]
 
@@ -208,7 +212,7 @@ tndoh_vax_state <-
 # create annotations
 tndoh_daily <-
   left_join(tndoh_daily, tndoh_vax_state,
-            by = "date") |> 
+            by = "date") %>%  
   mutate(pos_tests_new = pos_tests -lag(pos_tests, 1), 
          pos_pct =   pos_tests/total_tests,
          pos_pct_today = pos_tests_new/new_tests,
@@ -248,22 +252,22 @@ tndoh_daily <-
 
 
 tndoh_daily_limited <-
-  tndoh_daily |>
-  select(date, total_cases, total_hosp, total_deaths) |> 
+  tndoh_daily %>% 
+  select(date, total_cases, total_hosp, total_deaths) %>%  
   pivot_longer(cols = c(total_cases, total_hosp, total_deaths),
                names_to = "measure",
-               values_to = "count") |> 
+               values_to = "count") %>%  
   mutate(var.f = factor(measure, levels = c("total_cases", "total_hosp", "total_deaths"),
                         labels = c("Cases", "Hospitalizations", "Deaths")))  
 title_tnsdc <- cowplot::ggdraw() + 
   cowplot::draw_label(paste0("COVID-19 in Tennessee (as of ", max(tndoh_daily$date), ")") , fontface='bold')
 
 tndoh_daily_long <-
-  tndoh_daily |> 
-  select(date, new_cases, new_deaths, new_hosp) |>  
+  tndoh_daily %>%  
+  select(date, new_cases, new_deaths, new_hosp) %>%   
   pivot_longer(cols = c(new_cases, new_deaths, new_hosp),
                names_to = "var", 
-               values_to = "value") |> 
+               values_to = "value") %>%  
   mutate(var.f = factor(var, levels = c("new_cases", "new_deaths", "new_hosp"), 
                         labels = c("Cases", "Hospitalizations", "Deaths")))
 
@@ -279,8 +283,8 @@ label_pos_pct <-
 tndoh_age <- readxl::read_excel(here::here("data_tndoh/Public-Dataset-Age.xlsx"))
 names(tndoh_age) <-  tolower(names(tndoh_age))
 tndoh_age <-
-  tndoh_age |>
-  filter(age_range != "Pending") |> 
+  tndoh_age %>% 
+  filter(age_range != "Pending") %>%  
   mutate(date = lubridate::ymd(date),
          age_range = gsub(" years", "", age_range),
          age.f = factor(age_range),
@@ -296,8 +300,8 @@ tn_age_groups <-
 tndoh_age <- 
   left_join(tndoh_age,
           tn_age_groups,
-          by = "age.f") |> 
-  group_by(age.f) |> 
+          by = "age.f") %>%  
+  group_by(age.f) %>%  
   mutate(ar_new_cases_100k = ar_newcases/populationtn_byage_2019*100000,
          ar_new_cases_100k_7davg = round(RcppRoll::roll_meanr(ar_newcases, 7)/populationtn_byage_2019*100000, 1),
          ar_totaldeaths_100k    = ar_totaldeaths/populationtn_byage_2019*100000,
@@ -312,7 +316,7 @@ tndoh_age <-
 names(tndoh_vax_age) <- tolower(names(tndoh_vax_age))
 tndoh_vax_age <-
   tndoh_vax_age %>%
-  filter(!grepl("pending", age_group, ignore.case = T )) |> 
+  filter(!grepl("pending", age_group, ignore.case = T )) %>%  
   mutate(date = lubridate::ymd(date),
          age.f = factor(age_group,
                         levels = c("0-10", "11-20", "16-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+"), # 16-20 needs to match other age category
@@ -355,12 +359,12 @@ tndoh_countynew <-  readxl::read_excel(here::here("data_tndoh/Public-Dataset-Cou
 
 names(tndoh_countynew) <-  tolower(names(tndoh_countynew))
 tndoh_countynew <-
-  tndoh_countynew |> 
+  tndoh_countynew %>%  
   mutate(date = lubridate::ymd(date),
          pct_pos = total_cases/(total_tests)*100,
-         county_lower = tolower(county)) |> 
-  group_by(county) |>
-  arrange(date) |> 
+         county_lower = tolower(county)) %>%  
+  group_by(county) %>% 
+  arrange(date) %>%  
   mutate(new_cases_county_4davg = round(RcppRoll::roll_meanr(new_cases, 4), 1),
          new_cases_county_7davg = round(RcppRoll::roll_meanr(new_cases, 7), 1),
          new_deaths_county_7davg = round(RcppRoll::roll_meanr(new_deaths, 7), 1),
@@ -368,21 +372,21 @@ tndoh_countynew <-
          new_testpos_pct_7davg   = round(RcppRoll::roll_meanr(new_pos_tests, 7)/RcppRoll::roll_meanr(new_tests, 7)*100, 1),
          new_hospitalized_county_7davg = round(RcppRoll::roll_meanr(new_hospitalized, 7), 1),
          new_cases_county_7davg_1wkdelta = (new_cases_county_7davg - lag(new_cases_county_7davg, 7))/lag(new_cases_county_7davg, 7) 
-  ) |> 
+  ) %>%  
   ungroup()
 
 
   
 # TN_data <- tigris::counties(state = "TN", cb = TRUE)
 # names(TN_data) <- tolower(names(TN_data))
-# TN_counties <- sf::st_as_sf(TN_data) |> 
+# TN_counties <- sf::st_as_sf(TN_data) %>%  
 #     mutate(county_lower = tolower(as.character(name)))
 
 # TN COUNTY POPULATION FROM US CENSUS 2019 ESTIMATES
 # tn_county_pop <- read_csv(here::here("data_csv/TN 2019 county pop estimates.csv"))
 # tn_county_pop <-
-#   tn_county_pop |> 
-#   mutate(county_lower = tolower(county)) |> 
+#   tn_county_pop %>%  
+#   mutate(county_lower = tolower(county)) %>%  
 #   select(-county)
 # TN_counties <-
 #   left_join(TN_counties,
@@ -396,7 +400,7 @@ tndoh_countynew <-
 tndoh_countynew <-
   left_join(tndoh_countynew,
             TN_counties,
-            by = "county_lower") |> 
+            by = "county_lower") %>%  
   mutate(total_cases_per100kpop = total_cases/population*100000,
          new_cases_per100kpop_7davg   = new_cases_county_7davg /population*100000,
          total_tests_pctpop = total_tests/population*100,
@@ -404,14 +408,14 @@ tndoh_countynew <-
          total_deaths_per100kpop = total_deaths/population*100000) 
 
 tndoh_countynew_calc <-
-  tndoh_countynew |> 
-    group_by(date) |> 
-    filter(tolower(county) %in% TN_counties$county_lower) |> # exclude out of state and pending
+  tndoh_countynew %>%  
+    group_by(date) %>%  
+    filter(tolower(county) %in% TN_counties$county_lower) %>%  # exclude out of state and pending
     mutate(#new_testpos_pct = new_pos_tests/new_tests*100,
            new_cases_county_7davg_rank = rank(-new_cases_county_7davg),
            new_cases_per100kpop_7davg_rank = rank(-new_cases_per100kpop_7davg),
-           new_cases_rank = rank(-new_cases)) |> 
-    ungroup() |> 
+           new_cases_rank = rank(-new_cases)) %>%  
+    ungroup() %>%  
     select(county, date, new_cases_county_7davg_rank, 
            new_cases_per100kpop_7davg_rank, new_cases_rank)
 tndoh_countynew <-   
@@ -426,11 +430,11 @@ tndoh_demographics <- readxl::read_excel(here::here("data_tndoh/Public-Dataset-R
 names(tndoh_demographics) <-  tolower(names(tndoh_demographics))
 tndoh_demographics$cat_detail <- gsub("/ ", "/", tndoh_demographics$cat_detail)
 tndoh_demographics <-
-  tndoh_demographics |> 
+  tndoh_demographics %>%  
   filter(category == "RACE",
-         date == max(date)) |> 
+         date == max(date)) %>%  
   rename(race = cat_detail,
-         cases_byrace = cat_totalcases) |> 
+         cases_byrace = cat_totalcases) %>%  
   mutate(date = lubridate::ymd(date),
          race = factor(race,
                        levels = c("White", "Black or African American", "Asian",  "Other/Multiracial", "Pending",  "American Indian or Alaska Native", "Native Hawaiian or Other Pacific Islander"),
@@ -441,7 +445,7 @@ tndoh_demographics <-
 # us_data <-   sf::st_as_sf(us_data)
 # names(us_data) <- tolower(names(us_data))
 # us_data <-
-#   us_data |> 
+#   us_data %>%  
 #   filter(stusps %in% state.abb)
 # saveRDS(us_data, here::here("data_rds/us_data.rds"))
 # us_data <-  readRDS(here::here("data_rds/us_data.rds"))
@@ -451,7 +455,7 @@ tndoh_demographics <-
 # # state_pop <- readxl::read_excel(here::here("state_populations.xlsx"))
 # # state_pop$region <- gsub("\\.", "", state_pop$region)
 # # state_pop <-
-# #   state_pop |>
+# #   state_pop %>% 
 # #   pivot_longer(cols = -c(region, census_2010),
 # #                names_to = "pop_year",
 # #                names_prefix = "pop_",
@@ -460,8 +464,8 @@ tndoh_demographics <-
 # 
 # state_pop <- readRDS( here::here("data_rds/state_pop.rds"))
 # state_pop_2019 <-
-#   state_pop |> 
-#   filter(pop_year == 2019) |> 
+#   state_pop %>%  
+#   filter(pop_year == 2019) %>%  
 #   filter(region %in% state.name)
 
 
@@ -470,37 +474,37 @@ tndoh_demographics <-
 # DATA SOURCE CHANGED TO CDD; TEST POSITIVITY RATES NOT AVAILABLE THERE
 # covus_currentdata <- readr::read_csv(here::here("data_covidtracking/daily.csv"))
 # covus_currentdata <-
-#   covus_currentdata |> 
+#   covus_currentdata %>%  
 #   filter(state %in% state.abb,
-#          !state %in% c("AK", "HI") ) |> 
+#          !state %in% c("AK", "HI") ) %>%  
 #   mutate(date = lubridate::ymd(date))
 
 # covus_currentdata <- readRDS(here::here("data_covidtracking/covus_current.rds"))
 # covus_currentdata <-
-#   covus_currentdata |> 
+#   covus_currentdata %>%  
 #   left_join(us_data,
-#             by = c("state" = "stusps")) |> 
-#     left_join(state_pop_2019, by = c("name" = "region")) |> 
+#             by = c("state" = "stusps")) %>%  
+#     left_join(state_pop_2019, by = c("name" = "region")) %>%  
 #   mutate(test_density_pct = total/pop_estimate*100,
 #          case_density_pct = positive/pop_estimate*100)  
 # 
 # covus_currentdata <-
-#   covus_currentdata |>
-#   group_by(state) |> 
-#   arrange(date) |> 
+#   covus_currentdata %>% 
+#   group_by(state) %>%  
+#   arrange(date) %>%  
 #   mutate(new_cases_state_7davg = round(RcppRoll::roll_meanr(positiveIncrease, 7), 1),
 #          new_deaths_state_7davg = round(RcppRoll::roll_meanr(deathIncrease, 7), 1),
 #          new_deaths_state_7davg_100k = new_deaths_state_7davg/pop_estimate*100000,
 #          new_testpos_pct   = round(positiveIncrease/totalTestResultsIncrease*100, 1),
 #          new_testpos_pct_7davg   = round(RcppRoll::roll_meanr(positiveIncrease, 7)/RcppRoll::roll_meanr(totalTestResultsIncrease, 7)*100, 1),
 #          new_cases_state_7davg_100k = new_cases_state_7davg/pop_estimate*100000
-#   ) |> 
+#   ) %>%  
 #   ungroup()
 # 
 # covus_currentdata <-
-#   covus_currentdata |>
-#   group_by(date) |> 
-#   mutate(rank_newcases7davg = rank(-new_cases_state_7davg_100k)) |> 
+#   covus_currentdata %>% 
+#   group_by(date) %>%  
+#   mutate(rank_newcases7davg = rank(-new_cases_state_7davg_100k)) %>%  
 #   ungroup()
 # 
 # state_tbl <- 
@@ -508,9 +512,9 @@ tndoh_demographics <-
 #          state = state.abb)
 # 
 # covus_currentdata_2163 <-
-#   covus_currentdata |> 
-#   mutate(geometry = st_transform(geometry, 2163)) |> 
-#     left_join(state_tbl, by = "state") |> 
+#   covus_currentdata %>%  
+#   mutate(geometry = st_transform(geometry, 2163)) %>%  
+#     left_join(state_tbl, by = "state") %>%  
 #   mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr>
 #                      <tr><td>New Cases/100k (7d Avg): %s</td></tr>
 #                      <tr><td>Test %% Positive (7d Avg): %1.1f%%</td></tr>
@@ -540,28 +544,28 @@ cdc_currentdata <-
 
 
 cdc_currentdata <-
-  cdc_currentdata |> 
+  cdc_currentdata %>%  
   # left_join(us_data,
-  #           by = c("state" = "stusps")) |> 
+  #           by = c("state" = "stusps")) %>%  
   left_join(state_pop_2019, by = "region") 
 
 
 cdc_currentdata <-
-  cdc_currentdata |>
-  group_by(state) |> 
-  arrange(date) |> 
+  cdc_currentdata %>% 
+  group_by(state) %>%  
+  arrange(date) %>%  
   mutate(case_density_pct = tot_cases/pop_estimate*100,
          new_cases_state_7davg = round(RcppRoll::roll_meanr(new_case, 7), 1),
          new_deaths_state_7davg = round(RcppRoll::roll_meanr(new_death, 7), 1),
          new_deaths_state_7davg_100k = new_deaths_state_7davg/pop_estimate*100000,
          new_cases_state_7davg_100k = new_cases_state_7davg/pop_estimate*100000
-  ) |> 
+  ) %>%  
   ungroup()
 
 cdc_currentdata <-
-  cdc_currentdata |>
-  group_by(date) |> 
-  mutate(rank_newcases7davg = rank(-new_cases_state_7davg_100k)) |> 
+  cdc_currentdata %>% 
+  group_by(date) %>%  
+  mutate(rank_newcases7davg = rank(-new_cases_state_7davg_100k)) %>%  
   ungroup()
 
 
@@ -572,11 +576,11 @@ state_tbl <-
 
 
 cdc_currentdata_2163 <-
-  cdc_currentdata |> 
-  filter(date == max(date)) |>
-  left_join(us_data, by = c("state" = "stusps"))  |>
-  mutate(geometry = st_transform(geometry, 2163)) |> 
-  left_join(state_tbl, by = c("state", "state_name")) |>
+  cdc_currentdata %>%  
+  filter(date == max(date)) %>% 
+  left_join(us_data, by = c("state" = "stusps"))  %>% 
+  mutate(geometry = st_transform(geometry, 2163)) %>%  
+  left_join(state_tbl, by = c("state", "state_name")) %>% 
   mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr>
                      <tr><td>New Cases/100k (7d Avg): %s</td></tr>
                      <tr><td>State Rank (Cases/100k 7d Avg): %s</td></tr>
@@ -617,13 +621,13 @@ tndoh_vax_county <-
 
 ```{r interactive_daily, fig.width=8, message=FALSE, warning=FALSE}
 pl_new_tnsdc <-
-  tndoh_daily |>
-    filter(date >=  max(date) - 120) |>
+  tndoh_daily %>% 
+    filter(date >=  max(date) - 120) %>% 
   pivot_longer(cols = c(new_cases, new_hosp, new_deaths),
                names_to = "var", 
-               values_to = "value") |> 
-  # filter(date > lubridate::ymd("2021-01-01")) |>
-  ggplot(aes(x = date)) |> \(x) x +
+               values_to = "value") %>%  
+  # filter(date > lubridate::ymd("2021-01-01")) %>% 
+  ggplot(aes(x = date)) +
   geom_rect(aes(xmin = max(tndoh_daily$date)-7, xmax = max(tndoh_daily$date) + 1, ymin = -Inf, ymax = Inf),
             fill = "grey", alpha = 0.2) +
   ggiraph::geom_col_interactive(aes(y = value, fill = var, tooltip = tt_daily, data_id = date), alpha = 0.5,
@@ -669,9 +673,9 @@ ggiraph::girafe(ggobj = pl_new_tnsdc,
 ```{r fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
 # PLOTS ####
 pl_tests_new <-
-  tndoh_daily |>
-  # filter(date - 90) |>
-  ggplot(aes(x=date)) |> \(x) x +
+  tndoh_daily %>% 
+  # filter(date - 90) %>% 
+  ggplot(aes(x=date)) +
   geom_col(aes(y = new_tests, fill = "Tests"), alpha = 0.5) +
   geom_col(aes(y = new_cases, fill = "Cases"), alpha = 0.7) +
   labs(x=NULL,
@@ -698,9 +702,9 @@ pl_tests_new <-
 # age ####
 
 pl_age <-
-  tndoh_age |>
-  filter(date == max(date)) |> 
-  ggplot() |> \(x) x +
+  tndoh_age %>% 
+  filter(date == max(date)) %>% 
+  ggplot() +
 # pl_age <-
 #   pl_age +
   geom_blank(data = tndoh_age[tndoh_age$ar_totalcases == max(tndoh_age$ar_totalcases), ], 
@@ -719,9 +723,9 @@ pl_age <-
 
 # multi-axis plot
 pl_age_death <-
-  tndoh_age |> 
-    filter(date == max(date)) |> 
-  ggplot(aes(age.f, deaths_case_rate, group = date)) |> \(x) x +
+  tndoh_age %>%  
+    filter(date == max(date)) %>%  
+  ggplot(aes(age.f, deaths_case_rate, group = date)) +
 # pl_age_death <-
 #   pl_age_death +
   geom_point(color = "red") +
@@ -737,9 +741,9 @@ b <- diff(ylim.prim)/diff(ylim.sec)
 a <- b*(ylim.prim[1] - ylim.sec[1])
 
 pl_age_death_final <-
-  tndoh_age |>
-  filter(date == max(date)) |> 
-  ggplot(aes(x=age.f)) |> \(x) x +
+  tndoh_age %>% 
+  filter(date == max(date)) %>%  
+  ggplot(aes(x=age.f)) +
 # pl_age_death_final <-
 #   pl_age_death_final +
   geom_blank(data = tndoh_age[tndoh_age$ar_totalcases == max(tndoh_age$ar_totalcases), ], 
@@ -767,10 +771,10 @@ race_total <- sum(tndoh_demographics$cases_byrace[tndoh_demographics$race != "Pe
 # AGE HEATMAP
 max_newcaserate_byage <- max(tndoh_age$ar_new_cases_100k_7davg, na.rm = T)
 ar_newcase_heatmap_100k <-
-  tndoh_age |> 
-  filter(date >= lubridate::ymd("2020-04-01")) |> 
+  tndoh_age %>%  
+  filter(date >= lubridate::ymd("2020-04-01")) %>%  
   ggplot(aes(x = date,
-             y = age.f)) |> \(x) x +
+             y = age.f)) +
 # ar_newcase_heatmap_100k <-
 #   ar_newcase_heatmap_100k +
   geom_tile(aes(fill = ar_new_cases_100k_7davg,
@@ -849,7 +853,7 @@ latest_vax_date <- max(tndoh_vax_county$date, na.rm = T)
 tndoh_vax_county %>% 
   filter(date == latest_vax_date,
          !is.na(statefp)) %>% 
-    ggplot() |> \(x) x +
+    ggplot() +
     geom_sf(data = TN_counties) +
     geom_sf(aes(geometry = geometry,
                 fill = recipient_count_pct),
@@ -887,18 +891,18 @@ variable.labs <- c( "Cases", "Hospitalizations", "Deaths", "Tests", "Test Positi
 names(variable.labs) <- c( "new_cases", "new_hosp", "new_deaths", "new_tests", "pos_pct_today", "new_vaccine_count")
 
 plot_state_trends <- 
-  tndoh_daily |> 
-  mutate(pos_pct_today = pos_pct_today*100) |> 
+  tndoh_daily %>%  
+  mutate(pos_pct_today = pos_pct_today*100) %>%  
   # select(date, new_cases_7davg)
-  # select(date, new_cases, new_deaths, new_tests, pos_pct_today) |> 
-  select(date, new_cases, new_hosp, new_deaths, new_tests, pos_pct_today, new_vaccine_count) |>
+  # select(date, new_cases, new_deaths, new_tests, pos_pct_today) %>%  
+  select(date, new_cases, new_hosp, new_deaths, new_tests, pos_pct_today, new_vaccine_count) %>% 
   pivot_longer(cols = -date,
                names_to = "variable",
-               values_to = "value") |> 
-  group_by(variable) |> 
-  arrange(date) |> 
-  mutate(value_7davg = RcppRoll::roll_meanr(value, 7)) |> 
-  ggplot() |> \(x) x +
+               values_to = "value") %>%  
+  group_by(variable) %>%  
+  arrange(date) %>%  
+  mutate(value_7davg = RcppRoll::roll_meanr(value, 7)) %>%  
+  ggplot() +
 # plot_state_trends <- 
 #   plot_state_trends +
   geom_line(aes(date, value), size = 0.6, color = "grey") +
@@ -914,17 +918,17 @@ plot_state_trends <-
 
 # MIDTN counties plot ####
 counties_top10 <-
-  tndoh_countynew |>  #select(new_cases_county_7davg)
-  ungroup() |> 
+  tndoh_countynew %>%   #select(new_cases_county_7davg)
+  ungroup() %>%  
   filter(date == max(date, na.rm = T),
-         name %in% TN_counties$name) |> # exclude the pending and out-of-state
-  top_n(10, wt = new_cases_county_7davg) |> 
+         name %in% TN_counties$name) %>%  # exclude the pending and out-of-state
+  top_n(10, wt = new_cases_county_7davg) %>%  
   pull(name)
 
 plot_top10_counties <- 
-  tndoh_countynew |> 
-  filter(name %in% counties_top10) |>
-  ggplot() |> \(x) x +
+  tndoh_countynew %>%  
+  filter(name %in% counties_top10) %>% 
+  ggplot() +
 # plot_top10_counties <- 
 #   plot_top10_counties +
   # geom_bar(stat = "identity") +
@@ -957,19 +961,19 @@ Counties with the top 10 greatest weekly increase in New Cases, by % Change of 7
 ```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 # MIDTN counties plot ####
 counties_top10_increase <-
-  tndoh_countynew |>  
-  ungroup() |> 
+  tndoh_countynew %>%   
+  ungroup() %>%  
   filter(date == max(date, na.rm = T),
        new_cases_county_7davg_1wkdelta > 0,
          new_cases_county_7davg >= 5,
-         name %in% TN_counties$name) |> # exclude the pending and out-of-state
-  top_n(n = 10, wt = new_cases_county_7davg_1wkdelta) |> 
+         name %in% TN_counties$name) %>%  # exclude the pending and out-of-state
+  top_n(n = 10, wt = new_cases_county_7davg_1wkdelta) %>%  
   pull(name)
 
 plot_top10_increase <-
-  tndoh_countynew |> 
-  filter(name %in% counties_top10_increase) |>
-  ggplot() |> \(x) x +
+  tndoh_countynew %>%  
+  filter(name %in% counties_top10_increase) %>% 
+  ggplot() +
 # plot_top10_increase + 
   # geom_bar(stat = "identity") +
   geom_col(aes(date, new_cases), fill = "steelblue", alpha = 0.5) +
@@ -1002,19 +1006,19 @@ Counties with the top 10 greatest weekly Decrease in New Cases, by % Change of 7
 ```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 # MIDTN counties plot ####
 counties_top10_decrease <-
-  tndoh_countynew |>  
-  ungroup() |> 
+  tndoh_countynew %>%   
+  ungroup() %>%  
   filter(date == max(date, na.rm = T),
        new_cases_county_7davg_1wkdelta < 0,
            new_cases_county_7davg >= 5,
-         name %in% TN_counties$name) |> # exclude the pending and out-of-state
-  top_n(n = -10, wt = new_cases_county_7davg_1wkdelta) |> 
+         name %in% TN_counties$name) %>%  # exclude the pending and out-of-state
+  top_n(n = -10, wt = new_cases_county_7davg_1wkdelta) %>%  
   pull(name)
 
 pl_best10 <-
- tndoh_countynew |> 
-  filter(name %in% counties_top10_decrease) |>
-  ggplot() |> \(x) x +
+ tndoh_countynew %>%  
+  filter(name %in% counties_top10_decrease) %>% 
+  ggplot() +
 # pl_best10 <-
 #   pl_best10 +
   # geom_bar(stat = "identity") +
@@ -1053,12 +1057,12 @@ County color indicates the New Cases per day per county population (7 day averag
 ```{r echo=TRUE, message=FALSE, warning=FALSE, out.width = '100%'}
 # make county data to list
 county_plots <-
-  tndoh_countynew |>
+  tndoh_countynew %>% 
   filter(!is.na(date),
-         date >= lubridate::ymd("2020-03-15")) |> 
-  group_by(name) |> 
-  nest() |> 
-  arrange(name) |> 
+         date >= lubridate::ymd("2020-03-15")) %>%  
+  group_by(name) %>%  
+  nest() %>%  
+  arrange(name) %>%  
   mutate(pl_new = map2(data, name,
                        ~ggplot(data = .x) +
                          geom_col(aes(date, new_cases, fill = "Cases"), alpha = 0.5) +
@@ -1090,15 +1094,15 @@ county_plots <-
 
 county_data_byday_now <-
   left_join(TN_counties, 
-            {tndoh_countynew |> 
-                filter(date == max(date, na.rm = T)) |>  
+            {tndoh_countynew %>%  
+                filter(date == max(date, na.rm = T)) %>%   
                 select(name, total_cases, new_cases_county_7davg, new_cases_per100kpop_7davg, new_cases_per100kpop_7davg_rank,
                        new_testpos_pct, new_testpos_pct_7davg, new_tests, new_pos_tests,
                        new_cases_rank, new_cases, new_cases_rank,
-                       total_deaths, total_hospitalized)}) |> 
+                       total_deaths, total_hospitalized)}) %>%  
   mutate(cases = replace_na(total_cases, 0),
-         deaths = replace_na(total_deaths, 0)) |> 
-  left_join({county_plots |> select(name, pl_new)},
+         deaths = replace_na(total_deaths, 0)) %>%  
+  left_join({county_plots %>%  select(name, pl_new)},
             by = "name")
 
 
@@ -1117,7 +1121,7 @@ lbls <-
           comma(county_data_byday_now$new_cases, digits = 0),county_data_byday_now$new_cases_rank, max(county_data_byday_now$new_cases_rank), 
           county_data_byday_now$new_testpos_pct, county_data_byday_now$new_pos_tests, county_data_byday_now$new_tests, 
           county_data_byday_now$new_testpos_pct_7davg,
-          county_data_byday_now$total_deaths) |> 
+          county_data_byday_now$total_deaths) %>%  
   lapply(htmltools::HTML)
 
 
@@ -1125,12 +1129,12 @@ lbls <-
 pal <- colorNumeric("viridis", domain = county_data_byday_now$new_cases_per100kpop_7davg, reverse = FALSE)
 
 
-leaflet() |> 
-  addProviderTiles(providers$Stamen.TonerLite) |>
+leaflet() %>%  
+  addProviderTiles(providers$Stamen.TonerLite) %>% 
   addPolygons(data = TN_counties, # borders of all counties
               color = "grey",
               fill = NA,
-              weight = 1) |>
+              weight = 1) %>% 
   addPolygons(data = county_data_byday_now,
               group = "name",
               fillColor = ~pal(county_data_byday_now$new_cases_per100kpop_7davg),
@@ -1144,12 +1148,12 @@ leaflet() |>
               labelOptions = labelOptions(
                 style = list("font-weight" = "normal", padding = "3px 8px"),
                 textsize = "15px",
-                direction = "auto")) |>
+                direction = "auto")) %>% 
   addLegend(pal = pal, 
             values = county_data_byday_now$new_cases_per100kpop_7davg,
             title = "New Cases/100k (7d Avg)",
             opacity = 0.9,
-            position = "bottomright") |> 
+            position = "bottomright") %>%  
   leafpop::addPopupGraphs(county_data_byday_now$pl_new,
                           group = "name",
                           width = 400, height = 200)
@@ -1162,17 +1166,17 @@ Counties are ordered by highest new cases per day (current) based on the most re
 
 ```{r tn_heatmap, fig.height=10, fig.width=10}
 county_order <-
-  tndoh_countynew |> 
-  filter(date == max(date)) |> 
-  mutate(county_bynewcases = reorder(county, new_cases_per100kpop_7davg)) |> 
+  tndoh_countynew %>%  
+  filter(date == max(date)) %>%  
+  mutate(county_bynewcases = reorder(county, new_cases_per100kpop_7davg)) %>%  
   select(county, county_bynewcases)
 
 # no longer interactive due to file size issues.
 TN_heatmap_100k <-
-  tndoh_countynew |> 
-    filter(!county %in% c("Pending", "Out of State")) |>
-  left_join(county_order, by = "county") |> 
-  mutate(new_cases = replace_na(new_cases, 0)) |> 
+  tndoh_countynew %>%  
+    filter(!county %in% c("Pending", "Out of State")) %>% 
+  left_join(county_order, by = "county") %>%  
+  mutate(new_cases = replace_na(new_cases, 0)) %>%  
   # mutate(lbls =
   #          sprintf("<tr><td><strong><i>%s Co. (%s)</i></strong></tr></td>
   #         <tr><td>Total Cases: %s</tr></td>
@@ -1187,10 +1191,10 @@ TN_heatmap_100k <-
   #         comma(new_cases, digits = 0),new_cases_rank, max(new_cases_rank, na.rm = T), 
   #         new_testpos_pct, new_pos_tests, new_tests, 
   #         new_testpos_pct_7davg,
-  #         total_deaths) ) |> 
+  #         total_deaths) ) %>%  
   ggplot(aes(x = date,
              y = county_bynewcases,
-             fill = new_cases_per100kpop_7davg)) |> \(x) x +
+             fill = new_cases_per100kpop_7davg)) +
 # TN_heatmap_100k <-
 #   TN_heatmap_100k +
   geom_tile(aes(fill = new_cases_per100kpop_7davg,
@@ -1236,12 +1240,12 @@ TN_heatmap_100k
 # fig 2 State ####
 
 pl_tnmap_tnsdc <-
-  tndoh_countynew |> 
-  filter(!is.na(date)) |> 
-  filter(date == max(date)) |>
+  tndoh_countynew %>%  
+  filter(!is.na(date)) %>%  
+  filter(date == max(date)) %>% 
   mutate(total_cases = case_when(total_cases == 0 ~ NA_real_,
-                               TRUE ~ total_cases)) |> 
-  ggplot() |> \(x) x +
+                               TRUE ~ total_cases)) %>%  
+  ggplot() +
 # pl_tnmap_tnsdc <-
 #   pl_tnmap_tnsdc +
   geom_sf(data = TN_counties) +
@@ -1264,10 +1268,10 @@ pl_tnmap_tnsdc <-
 # ggsave(here::here("figures/pl_tnmap.jpg"), dpi = 600, width = 12, height = 4, units = "in")
 
 pl_tnmap_7dDelta <-
-  tndoh_countynew |> #select(new_cases_county_7davg_1wkdelta)
-  filter(!is.na(date)) |> 
-  filter(date == max(date)) |>
-  ggplot() |> \(x) x +
+  tndoh_countynew %>%  #select(new_cases_county_7davg_1wkdelta)
+  filter(!is.na(date)) %>%  
+  filter(date == max(date)) %>% 
+  ggplot() +
 # pl_tnmap_7dDelta <-
 #   pl_tnmap_7dDelta +
   geom_sf(data = TN_counties) +
@@ -1286,10 +1290,10 @@ pl_tnmap_7dDelta <-
   theme(legend.position = "left")  
 
 pl_tnmap_newhosp <-
-  tndoh_countynew |> 
-  filter(!is.na(date)) |> 
-  filter(date == max(date)) |> 
-  ggplot() |> \(x) x +
+  tndoh_countynew %>%  
+  filter(!is.na(date)) %>%  
+  filter(date == max(date)) %>%  
+  ggplot() +
 # pl_tnmap_newhosp <-
 #   pl_tnmap_newhosp +
   geom_sf(data = TN_counties) +
@@ -1308,9 +1312,9 @@ pl_tnmap_newhosp <-
   theme(legend.position = "left")  
 
 pl_tnmap_new_tnsdc <-
-  tndoh_countynew |> 
-  filter(date == max(date)) |> 
-  ggplot() |> \(x) x +
+  tndoh_countynew %>%  
+  filter(date == max(date)) %>%  
+  ggplot() +
 # pl_tnmap_new_tnsdc <-
 #   pl_tnmap_new_tnsdc +
   geom_sf(data = TN_counties) +
@@ -1341,7 +1345,7 @@ pl_FINAL_tnsdc <-
                    rel_heights = c(.1,1,1,1, 1),
                    align = "y")
   unclassified <- 
-    tndoh_countynew |> 
+    tndoh_countynew %>%  
     filter(date == max(date),
          county_lower %in% c("pending", "out of state"))
 
@@ -1380,9 +1384,9 @@ pl_FINAL_tnsdc <-
 
 ```{r fig.height=9, fig.width=12, message=FALSE, warning=FALSE}
 pl_deaths <-
-  tndoh_countynew |>   
-  filter(date == max(date, na.rm = T)) |> 
-  ggplot() |> \(x) x +
+  tndoh_countynew %>%    
+  filter(date == max(date, na.rm = T)) %>%  
+  ggplot() +
 # pl_deaths <-
 #   pl_deaths +
   geom_sf(data = TN_counties) +
@@ -1404,10 +1408,10 @@ pl_deaths <-
 
 
 pl_cfr <-
-  tndoh_countynew |>   
-  filter(date == max(date, na.rm = T)) |> 
-  mutate(cfr = total_deaths/total_cases) |> 
-  ggplot() |> \(x) x +
+  tndoh_countynew %>%    
+  filter(date == max(date, na.rm = T)) %>%  
+  mutate(cfr = total_deaths/total_cases) %>%  
+  ggplot() +
 # pl_cfr <-
 #   pl_cfr +
   geom_sf(data = TN_counties) +
@@ -1443,9 +1447,9 @@ The estimated Tennessee county populations are taken from the US Census (2019 es
 ```{r fig.height=9, fig.width=12, message=FALSE, warning=FALSE}
 
 pl_deaths <-
-  tndoh_countynew |>   
-  filter(date == max(date, na.rm = T)) |> 
-  ggplot() |> \(x) x +
+  tndoh_countynew %>%    
+  filter(date == max(date, na.rm = T)) %>%  
+  ggplot() +
 # pl_deaths <-
 #   pl_deaths +
   geom_sf(data = TN_counties) +
@@ -1466,9 +1470,9 @@ pl_deaths <-
   theme(legend.position = "left") 
 
 pl_cases <-
-  tndoh_countynew |>   
-  filter(date == max(date, na.rm = T)) |> 
-  ggplot() |> \(x) x +
+  tndoh_countynew %>%    
+  filter(date == max(date, na.rm = T)) %>%  
+  ggplot() +
 # pl_cases <-
 #   pl_cases +
   geom_sf(data = TN_counties) +
@@ -1489,9 +1493,9 @@ pl_cases <-
   theme(legend.position = "left") 
 
 pl_newcases <-
-  tndoh_countynew |> #select(new_cases_per100kpop_7davg)   
-  filter(date == max(date, na.rm = T)) |> 
-  ggplot() |> \(x) x +
+  tndoh_countynew %>%  #select(new_cases_per100kpop_7davg)   
+  filter(date == max(date, na.rm = T)) %>%  
+  ggplot() +
 # pl_newcases <-
 #   pl_newcases +
   geom_sf(data = TN_counties) +
@@ -1512,11 +1516,11 @@ pl_newcases <-
   theme(legend.position = "left") 
 
 pl_cfr <-
-  tndoh_countynew |> 
-    mutate(total_tests_pctpop = total_tests/population*100000) |> 
+  tndoh_countynew %>%  
+    mutate(total_tests_pctpop = total_tests/population*100000) %>%  
     # select(total_tests_per100kpop)   
-  filter(date == max(date, na.rm = T)) |> 
-  ggplot() |> \(x) x +
+  filter(date == max(date, na.rm = T)) %>%  
+  ggplot() +
 # pl_cfr <-
 #   pl_cfr +
   geom_sf(data = TN_counties) +
@@ -1557,10 +1561,10 @@ Formerly I used the [COVID Tracking project](https://covidtracking.com/data#stat
 max_newcaserate <- max(cdc_currentdata_2163$new_cases_state_7davg_100k[cdc_currentdata_2163$date == max(cdc_currentdata_2163$date)], na.rm = T)
                                                   
 pl_us_cases_100k <-
-  cdc_currentdata_2163 |> 
-  filter(date == max(date)) |> 
+  cdc_currentdata_2163 %>%  
+  filter(date == max(date)) %>%  
   ggplot(aes(geometry = geometry,
-             fill = new_cases_state_7davg_100k)) |> \(x) x +
+             fill = new_cases_state_7davg_100k)) +
 # pl_us_cases_100k <-
 #   pl_us_cases_100k +
   ggiraph::geom_sf_interactive(aes(tooltip = tt,
@@ -1584,17 +1588,17 @@ ggiraph::girafe(code = print( pl_us_cases_100k),
 max_newcaserate_alldates <- max(cdc_currentdata$new_cases_state_7davg_100k, na.rm = T)
 
 state_order <- 
-  cdc_currentdata_2163 |> 
-  filter(date == max(date)) |> 
-  mutate(state_bynewcases = reorder(state, new_cases_state_7davg_100k)) |> 
+  cdc_currentdata_2163 %>%  
+  filter(date == max(date)) %>%  
+  mutate(state_bynewcases = reorder(state, new_cases_state_7davg_100k)) %>%  
   select(state, state_bynewcases)
 
 us_heatmap_100k <-
-  cdc_currentdata |> 
-  left_join(state_order, by = "state") |> 
-  filter(date >= lubridate::ymd("2020-04-01")) |> 
+  cdc_currentdata %>%  
+  left_join(state_order, by = "state") %>%  
+  filter(date >= lubridate::ymd("2020-04-01")) %>%  
   ggplot(aes(x = date,
-             y = state_bynewcases)) |> \(x) x +
+             y = state_bynewcases)) +
 # us_heatmap_100k <-
 #   us_heatmap_100k +
   geom_tile(aes(fill = new_cases_state_7davg_100k,
