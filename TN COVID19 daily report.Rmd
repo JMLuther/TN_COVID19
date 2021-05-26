@@ -848,7 +848,10 @@ A bit of good news. Vaccination data is not updated every day- most recent data 
 
 TN now provides detail on number of recipients and number of vaccinations.
 
-```{r fig.height=4, fig.width=10, message=FALSE, warning=FALSE}
+
+**COUNTY vaccination file from the state is empty today**
+
+```{r eval=FALSE, fig.height=4, fig.width=10, message=FALSE, warning=FALSE, include=FALSE}
 latest_vax_date <- max(tndoh_vax_county$date, na.rm = T)
 tndoh_vax_county %>% 
   filter(date == latest_vax_date,
