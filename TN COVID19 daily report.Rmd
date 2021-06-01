@@ -996,9 +996,10 @@ plot_top10_increase <-
              scales = "free_y")+
   theme(strip.text = element_text(size = 14))
 
-ifelse(length(plot_top10_increase$data$county) == 0,
-       print("No increase in any counties"),
-       print(plot_top10_counties))
+plot_top10_increase
+# ifelse(length(plot_top10_increase$data$county) == 0,
+#        print("No increase in any counties"),
+#        print(plot_top10_counties))
 ```
 
 ## Best 10: Largest Decrease in Cases
