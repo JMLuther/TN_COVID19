@@ -1011,47 +1011,47 @@ Counties with the top 10 greatest weekly Decrease in New Cases, by % Change of 7
 ```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 # MIDTN counties plot ####
 counties_top10_decrease <-
-  tndoh_countynew %>%   
-  ungroup() %>%  
+  tndoh_countynew %>%
+  ungroup() %>%
   filter(date == max(date, na.rm = T),
        new_cases_county_7davg_1wkdelta < 0,
            new_cases_county_7davg >= 5,
          name %in% TN_counties$name) %>%  # exclude the pending and out-of-state
-  top_n(n = -10, wt = new_cases_county_7davg_1wkdelta) %>%  
+  top_n(n = -10, wt = new_cases_county_7davg_1wkdelta) %>%
   pull(name)
 
-pl_best10 <-
- tndoh_countynew %>%  
-  filter(name %in% counties_top10_decrease) %>% 
-  ggplot() +
 # pl_best10 <-
-#   pl_best10 +
-  # geom_bar(stat = "identity") +
-  geom_col(aes(date, new_cases), fill = "steelblue", alpha = 0.5) +
-  geom_col(aes(date, new_deaths), fill = "red") +
-  geom_line(aes(date, new_cases_county_7davg), color = "steelblue", size = 1) +
-  labs(x=NULL,
-       y="New Results by day",
-       fill = NULL,
-       alpha = NULL,
-       subtitle = "New Cases by Day: 10 Counties with the largest 1-week Decrease") +
-  scale_y_continuous(expand = c(0,0)) +
-  ylim(0,NA) +
-  scale_x_date(date_breaks = "3 month", date_labels = "%b" ) +
-  theme(#axis.text.x =  element_text(angle = 90, hjust = 1),
-        legend.position = "none",
-        strip.text = element_text(size = 14)) +
-  facet_wrap(~name, nrow = 2, 
-             scales = "free_y")
-pl_best10
-# cat("There were no counties with a decreased 7d average")
+#  tndoh_countynew %>%  
+#   filter(name %in% counties_top10_decrease) %>% 
+#   ggplot() +
+# # pl_best10 <-
+# #   pl_best10 +
+#   # geom_bar(stat = "identity") +
+#   geom_col(aes(date, new_cases), fill = "steelblue", alpha = 0.5) +
+#   geom_col(aes(date, new_deaths), fill = "red") +
+#   geom_line(aes(date, new_cases_county_7davg), color = "steelblue", size = 1) +
+#   labs(x=NULL,
+#        y="New Results by day",
+#        fill = NULL,
+#        alpha = NULL,
+#        subtitle = "New Cases by Day: 10 Counties with the largest 1-week Decrease") +
+#   scale_y_continuous(expand = c(0,0)) +
+#   ylim(0,NA) +
+#   scale_x_date(date_breaks = "3 month", date_labels = "%b" ) +
+#   theme(#axis.text.x =  element_text(angle = 90, hjust = 1),
+#         legend.position = "none",
+#         strip.text = element_text(size = 14)) +
+#   facet_wrap(~name, nrow = 2, 
+#              scales = "free_y")
+# pl_best10
+# # cat("There were no counties with a decreased 7d average")
 
 
-# ifelse(length(counties_top10_decrease) >= 1,
-#        # IF >=1 with negative trend
-#        plot(pl_best10),
-#        # IF No counties with negative trend
-#        "There are no counties with a decreasing case trend")
+ifelse(length(counties_top10_decrease) >= 1,
+       # IF >=1 with negative trend
+       plot(pl_best10),
+       # IF No counties with negative trend
+       "There are no counties with a decreasing case trend")
 
 ```
 
