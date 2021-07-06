@@ -225,17 +225,17 @@ tndoh_daily <-
          new_hosp_7davg = RcppRoll::roll_meanr(new_hosp, 7),
          new_tests_7davg = RcppRoll::roll_meanr(new_tests, 7),
          pos_pct_7davg = RcppRoll::roll_meanr(pos_tests_new, 7)/RcppRoll::roll_meanr(new_tests, 7),
-         tt_daily = sprintf("<tr><td><b>%s</b></td></tr>
-                     <tr><td><b>New Cases: %s</b></td></tr>
-                     <tr><td><b>New Cases/100k: %s</b></td></tr>
-                     <tr><td><b>New Hospitalizations: %s</b></td></tr>
-                     <tr><td><b>New Deaths: %s</b></td></tr>
-                     <tr><td><b>Test+ %% Today: %1.1f%%</b></td></tr>
-                     <tr><td>New Cases 7d Avg/100k: %s</td></tr>
-                     <tr><td>Deaths 7d Avg: %1.1f</td></tr>
-                     <tr><td>Test+ %% 7d Avg: %1.1f%%</td></tr>
-                     <tr><td>Case Fatality Ratio: %1.2f%%</td></tr>
-                     <tr><td>New Vaccinations: %s</td></tr>
+         tt_daily = sprintf("<tr><td><b>%s</b></td></tr><br>
+                     <tr><td><b>New Cases: %s</b></td></tr><br>
+                     <tr><td><b>New Cases/100k: %s</b></td></tr><br>
+                     <tr><td><b>New Hospitalizations: %s</b></td></tr><br>
+                     <tr><td><b>New Deaths: %s</b></td></tr><br>
+                     <tr><td><b>Test+ %% Today: %1.1f%%</b></td></tr><br>
+                     <tr><td>New Cases 7d Avg/100k: %s</td></tr><br>
+                     <tr><td>Deaths 7d Avg: %1.1f</td></tr><br>
+                     <tr><td>Test+ %% 7d Avg: %1.1f%%</td></tr><br>
+                     <tr><td>Case Fatality Ratio: %1.2f%%</td></tr><br>
+                     <tr><td>New Vaccinations: %s</td></tr><br>
                      <tr><td>Rec 1st Vaccination %%Pop: %1.2f%%</td></tr>",
                      paste0(month.name[lubridate::month(date)], " ", lubridate::mday(date), ", ", lubridate::year(date), " (", lubridate::wday(date, label = T), ")"), 
                      comma(new_cases, digits = 0), 
@@ -581,17 +581,28 @@ cdc_currentdata_2163 <-
   left_join(us_data, by = c("state" = "stusps"))  %>% 
   mutate(geometry = st_transform(geometry, 2163)) %>%  
   left_join(state_tbl, by = c("state", "state_name")) %>% 
-  mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr>
-                     <tr><td>New Cases/100k (7d Avg): %s</td></tr>
-                     <tr><td>State Rank (Cases/100k 7d Avg): %s</td></tr>
-                     <tr><td>Total Cases: %s</td></tr>
-                     <tr><td>Total Deaths: %s</td></tr>
-                     <tr><td>New Deaths/d/100k (7d Avg): %1.2f</td></tr>
-                     <tr><td>CFR: %1.2f%%</td></tr>
+  mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr><br>
+                     <tr><td>New Cases/100k (7d Avg): %s</td></tr><br>
+                     <tr><td>State Rank (Cases/100k 7d Avg): %s</td></tr><br>
+                     <tr><td>Total Cases: %s</td></tr><br>
+                     <tr><td>Total Deaths: %s</td></tr><br>
+                     <tr><td>New Deaths/d/100k (7d Avg): %1.2f</td></tr><br>
+                     <tr><td>CFR: %1.2f%%</td></tr><br>
                      <tr><td>Case Density: %1.1f%% of pop.</td></tr>",
                      toupper(state_name),  paste0(month.name[lubridate::month(date)], " ", lubridate::mday(date)),
                      comma(new_cases_state_7davg_100k, digits = 1), rank_newcases7davg, comma(tot_cases, digits = 0),
                      comma(tot_death, digits = 0), new_deaths_state_7davg_100k, tot_death/tot_cases*100, case_density_pct)) 
+  # mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr>
+  #                    <tr><td>New Cases/100k (7d Avg): %s</td></tr>
+  #                    <tr><td>State Rank (Cases/100k 7d Avg): %s</td></tr>
+  #                    <tr><td>Total Cases: %s</td></tr>
+  #                    <tr><td>Total Deaths: %s</td></tr>
+  #                    <tr><td>New Deaths/d/100k (7d Avg): %1.2f</td></tr>
+  #                    <tr><td>CFR: %1.2f%%</td></tr>
+  #                    <tr><td>Case Density: %1.1f%% of pop.</td></tr>",
+  #                    toupper(state_name),  paste0(month.name[lubridate::month(date)], " ", lubridate::mday(date)),
+  #                    comma(new_cases_state_7davg_100k, digits = 1), rank_newcases7davg, comma(tot_cases, digits = 0),
+  #                    comma(tot_death, digits = 0), new_deaths_state_7davg_100k, tot_death/tot_cases*100, case_density_pct)) 
 
 # county
 tndoh_vax_county <-
