@@ -123,7 +123,7 @@ Previously the DOH reported results by date of report, rather than date of test.
 #               mode = 'wb',
 #               destfile = here::here("data_tndoh/Public-Dataset-Age.xlsx"))
 # # tools::md5sum(here::here("data_tndoh/Public-Dataset-Age.xlsx"))
-# 
+# bxq42@med.miami.edu
 # # COUNTY
 # download.file(url = #"https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-County-New.xlsx",
 #                 "https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-County-New.XLSX",
@@ -859,8 +859,6 @@ A bit of good news. Vaccination data is not updated every day- most recent data 
 
 TN now provides detail on number of recipients and number of vaccinations.
 
-
-**COUNTY vaccination file from the state is empty today**
 
 ```{r fig.height=4, fig.width=10, message=FALSE, warning=FALSE}
 latest_vax_date <- max(tndoh_vax_county$date, na.rm = T)
