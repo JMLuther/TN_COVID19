@@ -1048,9 +1048,9 @@ counties_top10_decrease <-
 #         strip.text = element_text(size = 14)) +
 #   facet_wrap(~name, nrow = 2,
 #              scales = "free_y")
+# pl_best10
 
 cat("There were no counties with a decreased 7d average")
-# pl_best10
 
 # ifelse(length(counties_top10_decrease) >= 1,
 #        # IF >=1 with negative trend
