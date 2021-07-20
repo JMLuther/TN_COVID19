@@ -1164,11 +1164,11 @@ leaflet() %>%
 
 ```
 
-## Comparison to Last year
+## Year-by-Year Comparison  
 
 *Note: Different scale on Y-axis*
 
-```{r fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
+```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
 # 2020 vs 2021 ####
 pl_cases_age_2020 <-
   tndoh_age %>% 
