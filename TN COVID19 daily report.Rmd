@@ -755,8 +755,6 @@ pl_age_death_final <-
   tndoh_age %>% 
   filter(date == max(date)) %>%  
   ggplot(aes(x=age.f)) +
-# pl_age_death_final <-
-#   pl_age_death_final +
   geom_blank(data = tndoh_age[tndoh_age$ar_totalcases == max(tndoh_age$ar_totalcases), ], 
              aes(x=age.f, y=ar_totalcases*1.1)) +
   geom_bar(aes(age.f, ar_totalcases), alpha = 0.5, fill = "steelblue", stat = "identity", ) +
@@ -786,8 +784,6 @@ ar_newcase_heatmap_100k <-
   filter(date >= lubridate::ymd("2020-04-01")) %>%  
   ggplot(aes(x = date,
              y = age.f)) +
-# ar_newcase_heatmap_100k <-
-#   ar_newcase_heatmap_100k +
   geom_tile(aes(fill = ar_new_cases_100k_7davg,
                 color = ar_new_cases_100k_7davg)) +
   viridis::scale_fill_viridis(labels = scales::comma,
@@ -952,8 +948,7 @@ plot_top10_counties <-
        fill = NULL,
        alpha = NULL,
        title = "Top 10 New Cases by Day (7d avg.)") +
-  scale_y_continuous(expand = c(0,0)) +
-  ylim(0,NA) +
+  scale_y_continuous(expand = c(0,0), limits = c(0,NA)) +
   scale_x_date(date_breaks = "3 month", date_labels = "%b" ) +
   theme(#axis.text.x =  element_text(angle = 90, hjust = 1),
         legend.position = "none") +
@@ -996,8 +991,7 @@ plot_top10_increase <-
        fill = NULL,
        alpha = NULL,
        subtitle = "New Cases by Day: 10 Counties with the largest 1-week increase") +
-  scale_y_continuous(expand = c(0,0)) +
-  ylim(0,NA) +
+  scale_y_continuous(expand = c(0,0), limits = c(0,NA)) +
   scale_x_date(date_breaks = "3 month", date_labels = "%b" ) +
   theme(#axis.text.x =  element_text(angle = 90, hjust = 1),
         legend.position = "none") +
@@ -1028,7 +1022,7 @@ counties_top10_decrease <-
          name %in% TN_counties$name) %>%  # exclude the pending and out-of-state
   top_n(n = -10, wt = new_cases_county_7davg_1wkdelta) %>%
   pull(name)
-# 
+
 # pl_best10 <-
 #  tndoh_countynew %>%
 #   filter(name %in% counties_top10_decrease) %>%
@@ -1095,8 +1089,8 @@ county_plots <-
                                                       # paste0("Hospitalized: ", .x$total_hospitalized[.x$date == max(.x$date)])
                                            )
                          ) +
-                         scale_y_continuous(expand = c(0,0)) +
-                         ylim(0,NA) +
+                         scale_y_continuous(expand = c(0,0), limits = c(0,NA)) +
+                         # ylim(0,NA) +
                          scale_x_date(date_breaks = "1 month", date_labels = "%m/%d" ) +
                          theme(axis.text.x =  element_text(angle = 45, hjust = 1),
                                legend.position = "bottom")
@@ -1170,6 +1164,55 @@ leaflet() %>%
 
 ```
 
+## Comparison to Last year
+
+*Note: Different scale on Y-axis*
+
+```{r fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
+# 2020 vs 2021 ####
+pl_cases_age_2020 <-
+  tndoh_age %>% 
+  filter(date >= lubridate::ymd("2020-06-01"), 
+         date <= {lubridate::ymd(Sys.Date()) - 365}) %>% 
+         # date <= lubridate::ymd("2020-08-01")) %>%            
+  # filter(date >= lubridate::ymd("2021-06-01")) %>% 
+  # filter(date >= lubridate::ymd("2021-05-01"),
+  #        age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
+  ggplot(aes(x = date,
+             y = ar_new_cases_100k_7davg,
+             fill = age.f)) +
+  geom_area(alpha = 0.5) +
+  theme(legend.position = "none") +
+  labs(x = NULL, y = NULL,
+       title = "2020: Average New Cases by Age Group (per 100k)") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) +
+  facet_wrap(~age.f, nrow = 1) +
+  # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
+  theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
+
+pl_cases_age_2021 <-
+  tndoh_age %>% 
+  filter(date >= lubridate::ymd("2021-06-01")) %>%
+  # filter(date >= lubridate::ymd("2021-05-01"),
+  #        age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
+  ggplot(aes(x = date,
+             y = ar_new_cases_100k_7davg,
+             fill = age.f)) +
+  geom_area(alpha = 0.5) +
+  theme(legend.position = "none") +
+  labs(x = NULL, y = NULL,
+       title = "2021: Average New Cases by Age Group (per 100k)") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) +
+  facet_wrap(~age.f, nrow = 1) +
+  # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
+  theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
+cowplot::plot_grid(pl_cases_age_2020,
+                   pl_cases_age_2021,
+                   nrow = 2)
+
+```
+
+
 ## TN County Heatmap
 
 Counties are ordered by highest new cases per day (current) based on the most recent 7 day average (per 100k population). Max limit of the color scale set at `r n_ul = 200; n_ul` to increase contrast- some local outbreaks exceed this limit (eg prison outbreaks in Bledsoe, Lake, Wayne Co.)
@@ -1187,32 +1230,11 @@ TN_heatmap_100k <-
     filter(!county %in% c("Pending", "Out of State")) %>% 
   left_join(county_order, by = "county") %>%  
   mutate(new_cases = replace_na(new_cases, 0)) %>%  
-  # mutate(lbls =
-  #          sprintf("<tr><td><strong><i>%s Co. (%s)</i></strong></tr></td>
-  #         <tr><td>Total Cases: %s</tr></td>
-  #         <tr><td>New Cases/d/100k, 7dAvg (rank): %1.1f (%s/%s)</tr></td>
-  #         <tr><td>New Cases Today (rank): %s (%s/%s)</tr></td>
-  #        <tr><td> Test +%% Today: %1.1f%% (%s/%s)</tr></td>
-  #         <tr><td>Test +%% (7dAvg): %1.1f%%</tr></td>
-  #         <tr><td>Total Deaths: %s</tr></td>", 
-  #         toupper(name), paste0(month.name[lubridate::month(date)], " ", lubridate::mday(date)),
-  #         comma(total_cases, digits = 0), 
-  #         new_cases_per100kpop_7davg, new_cases_per100kpop_7davg_rank, max(new_cases_per100kpop_7davg_rank, na.rm = T), 
-  #         comma(new_cases, digits = 0),new_cases_rank, max(new_cases_rank, na.rm = T), 
-  #         new_testpos_pct, new_pos_tests, new_tests, 
-  #         new_testpos_pct_7davg,
-  #         total_deaths) ) %>%  
   ggplot(aes(x = date,
              y = county_bynewcases,
              fill = new_cases_per100kpop_7davg)) +
-# TN_heatmap_100k <-
-#   TN_heatmap_100k +
   geom_tile(aes(fill = new_cases_per100kpop_7davg,
                 color = new_cases_per100kpop_7davg)) +  
-  # ggiraph::geom_tile_interactive(aes(tooltip = lbls,
-  #                                    data_id = county,
-  #                                    fill = new_cases_per100kpop_7davg,
-  #                                    color = new_cases_per100kpop_7davg)) +
   viridis::scale_fill_viridis(labels = scales::comma,
                                  limits = c(0, n_ul), oob = scales::squish,
                               option = "plasma") +
@@ -1395,31 +1417,34 @@ pl_FINAL_tnsdc <-
 ```{r fig.height=9, fig.width=12, message=FALSE, warning=FALSE}
 pl_deaths <-
   tndoh_countynew %>%    
-  filter(date == max(date, na.rm = T)) %>%  
+  filter(date == max(date, na.rm = T))  %>%
+  # filter(date == max(date, na.rm = T)-1)  %>%  
   ggplot() +
-# pl_deaths <-
-#   pl_deaths +
+  # pl_deaths <-
+  #   pl_deaths +
   geom_sf(data = TN_counties) +
   geom_sf(aes(geometry = geometry,
-              fill = total_deaths),
+              fill = total_deaths_per100kpop),
           color = "grey30",
           inherit.aes = F) +
-  geom_sf_text(aes(label=sprintf("%0.0f", comma(total_deaths, digits = 0)), 
-  # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths, pct_pos), 
+  geom_sf_text(aes(label=sprintf("%0.0f", total_deaths_per100kpop), 
+                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths, pct_pos), 
                    geometry = geometry, 
-                   color = cut(total_deaths, 2)), 
+                   color = cut(total_deaths_per100kpop, 2)), 
                size = 3) + 
   viridis::scale_fill_viridis(option = "C", direction = 1) +
   scale_color_manual(values = c("white", "black"), guide = F) +
   # scale_color_manual(values = c( "black", "white"), guide = F) +
-  labs(fill = "Deaths:") +
+  labs(fill = "Deaths per\n100K Pop.:") +
   theme_void() +
   theme(legend.position = "left") 
+
 
 
 pl_cfr <-
   tndoh_countynew %>%    
   filter(date == max(date, na.rm = T)) %>%  
+  # filter(date == max(date, na.rm = T)-1) %>%  
   mutate(cfr = total_deaths/total_cases) %>%  
   ggplot() +
 # pl_cfr <-
@@ -1444,7 +1469,10 @@ pl_cfr <-
 
 
 
-cowplot::plot_grid(title_tnsdc, pl_deaths, pl_tnmap_tnsdc, pl_cfr,
+cowplot::plot_grid(title_tnsdc, 
+                   pl_deaths,
+                   pl_tnmap_tnsdc, 
+                   pl_cfr,
                    nrow = 4, rel_heights = c(.1,1,1, 1))
 # ggsave(here::here("figures/pl_deaths_map.jpg"), dpi = 600, width = 12, height = 6, units = "in")
 
@@ -1458,10 +1486,11 @@ The estimated Tennessee county populations are taken from the US Census (2019 es
 
 pl_deaths <-
   tndoh_countynew %>%    
-  filter(date == max(date, na.rm = T)) %>%  
+  # filter(date == max(date, na.rm = T)-1) %>%  
+  filter(date == max(date, na.rm = T)) %>%
   ggplot() +
-# pl_deaths <-
-#   pl_deaths +
+  # pl_deaths <-
+  #   pl_deaths +
   geom_sf(data = TN_counties) +
   geom_sf(aes(geometry = geometry,
               fill = total_deaths_per100kpop),
@@ -1481,7 +1510,8 @@ pl_deaths <-
 
 pl_cases <-
   tndoh_countynew %>%    
-  filter(date == max(date, na.rm = T)) %>%  
+  # filter(date == max(date, na.rm = T)-1) %>%  
+  filter(date == max(date, na.rm = T)) %>%
   ggplot() +
 # pl_cases <-
 #   pl_cases +
@@ -1504,7 +1534,8 @@ pl_cases <-
 
 pl_newcases <-
   tndoh_countynew %>%  #select(new_cases_per100kpop_7davg)   
-  filter(date == max(date, na.rm = T)) %>%  
+  filter(date == max(date, na.rm = T)) %>%
+  # filter(date == max(date, na.rm = T)-1) %>%  
   ggplot() +
 # pl_newcases <-
 #   pl_newcases +
@@ -1529,10 +1560,11 @@ pl_cfr <-
   tndoh_countynew %>%  
     mutate(total_tests_pctpop = total_tests/population*100000) %>%  
     # select(total_tests_per100kpop)   
-  filter(date == max(date, na.rm = T)) %>%  
+  filter(date == max(date, na.rm = T)) %>%
+  # filter(date == max(date, na.rm = T)-1) %>%  
   ggplot() +
-# pl_cfr <-
-#   pl_cfr +
+  # pl_cfr <-
+  #   pl_cfr +
   geom_sf(data = TN_counties) +
   geom_sf(aes(geometry = geometry,
               fill = total_tests_pctpop),

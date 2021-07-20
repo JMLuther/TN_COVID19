@@ -1,7 +1,7 @@
 tndoh_age$age.f %>% unique()
 tndoh_age %>% 
   filter(date >= lubridate::ymd("2021-02-15"),
-         age.f %in% c("41-50","51-60", "61-70", "71-80", "81+")) %>% 
+         age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
   ggplot(aes(x = date,
              y = age.f,
              height = ar_new_deaths_100k_7davg,
@@ -15,7 +15,7 @@ tndoh_age %>%
 pl_deaths_age <-
   tndoh_age %>% 
   filter(date >= lubridate::ymd("2021-02-15"),
-         age.f %in% c("41-50","51-60", "61-70", "71-80", "81+")) %>% 
+         age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
   ggplot(aes(x = date,
              y = ar_new_deaths_100k_7davg,
              fill = age.f)) +
@@ -30,8 +30,11 @@ pl_deaths_age <-
 
 pl_cases_age <-
   tndoh_age %>% 
-  filter(date >= lubridate::ymd("2021-02-15"),
-         age.f %in% c("41-50","51-60", "61-70", "71-80", "81+")) %>% 
+    filter(date >= lubridate::ymd("2020-06-01"),
+           date <= lubridate::ymd("2020-08-01")) %>%            
+    # filter(date >= lubridate::ymd("2021-06-01")) %>% 
+  # filter(date >= lubridate::ymd("2021-05-01"),
+  #        age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
   ggplot(aes(x = date,
              y = ar_new_cases_100k_7davg,
              fill = age.f)) +
@@ -46,6 +49,49 @@ pl_cases_age <-
 cowplot::plot_grid(pl_cases_age,
                    pl_deaths_age,
                    nrow = 2)
+
+# 2020 vs 2021 ####
+pl_cases_age_2020 <-
+  tndoh_age %>% 
+  filter(date >= lubridate::ymd("2020-06-01"), 
+         date <= {lubridate::ymd(Sys.Date()) - 365}) %>% 
+         # date <= lubridate::ymd("2020-08-01")) %>%            
+  # filter(date >= lubridate::ymd("2021-06-01")) %>% 
+  # filter(date >= lubridate::ymd("2021-05-01"),
+  #        age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
+  ggplot(aes(x = date,
+             y = ar_new_cases_100k_7davg,
+             fill = age.f)) +
+  geom_area(alpha = 0.5) +
+  theme(legend.position = "none") +
+  labs(x = NULL, y = NULL,
+       title = "2020: Average New Cases, per 100k within age group") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) +
+  facet_wrap(~age.f, nrow = 1) +
+  # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
+  theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
+
+pl_cases_age_2021 <-
+  tndoh_age %>% 
+  filter(date >= lubridate::ymd("2021-06-01")) %>%
+  # filter(date >= lubridate::ymd("2021-05-01"),
+  #        age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
+  ggplot(aes(x = date,
+             y = ar_new_cases_100k_7davg,
+             fill = age.f)) +
+  geom_area(alpha = 0.5) +
+  theme(legend.position = "none") +
+  labs(x = NULL, y = NULL,
+       title = "2021: Average New Cases, per 100k within age group") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) +
+  facet_wrap(~age.f, nrow = 1) +
+  # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
+  theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
+cowplot::plot_grid(pl_cases_age_2020,
+                   pl_cases_age_2021,
+                   nrow = 2)
+
+
 
 # AGE HEATMAP ####
 max_newcaserate_byage <- max(tndoh_age$ar_new_cases_100k_7davg, na.rm = T)
