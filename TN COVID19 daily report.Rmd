@@ -1022,7 +1022,7 @@ counties_top10_decrease <-
          name %in% TN_counties$name) %>%  # exclude the pending and out-of-state
   top_n(n = -10, wt = new_cases_county_7davg_1wkdelta) %>%
   pull(name)
-
+# 
 # pl_best10 <-
 #  tndoh_countynew %>%
 #   filter(name %in% counties_top10_decrease) %>%
