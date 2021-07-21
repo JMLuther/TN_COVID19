@@ -622,6 +622,18 @@ tndoh_vax_county <-
            recipient_count_pct = recipient_count/population*100) %>% 
     ungroup() %>% 
     filter(!is.na(statefp)) 
+latest_vax_date <- max(tndoh_vax_county$date, na.rm = T)
+tndoh_vax_county_current <- 
+  left_join(
+  {tndoh_vax_county %>% 
+      filter(date == latest_vax_date,
+             !is.na(statefp))},
+  {tndoh_countynew %>%    
+      filter(date == max(date)) %>% 
+      select(county_lower, total_cases_per100kpop, new_cases_per100kpop_7davg)}
+) %>% 
+  mutate(immune_pct = recipient_count_pct + total_cases_per100kpop/1000)  
+
 
 ```
 
@@ -856,36 +868,61 @@ A bit of good news. Vaccination data is not updated every day- most recent data 
 TN now provides detail on number of recipients and number of vaccinations.
 
 
-```{r fig.height=4, fig.width=10, message=FALSE, warning=FALSE}
-latest_vax_date <- max(tndoh_vax_county$date, na.rm = T)
-tndoh_vax_county %>% 
+```{r fig.height=6, fig.width=10, message=FALSE, warning=FALSE}
+plot_vacc <- 
+  tndoh_vax_county_current %>% 
   filter(date == latest_vax_date,
          !is.na(statefp)) %>% 
-    ggplot() +
-    geom_sf(data = TN_counties) +
-    geom_sf(aes(geometry = geometry,
-                fill = recipient_count_pct),
-            color = "grey30",
-            inherit.aes = F) +
-    geom_sf_text(aes(label=sprintf("%0.1f%%", recipient_count_pct), 
-                     # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths, pct_pos), 
-                     geometry = geometry, 
-                     color = cut(recipient_count_pct, 2)), 
-                 size = 3) + 
-    viridis::scale_fill_viridis(option = "C", direction = 1) +
-    scale_color_manual(values = c("white", "black"), guide = F) +
-    labs(fill = "%Pop.:",
-         title = paste0("Vaccination Coverage (latest update on ", latest_vax_date, ")"),
-         subtitle = sprintf("First Vaccinations: %s (%1.1f%% of TN Population)\nCompleted Vacc. : %s (%1.1f%% of Pop.)\nTotal Vaccinations: %s",
-                            comma(max(tndoh_vax_state$recipient_count, na.rm = T), 0),
-                            max(tndoh_vax_state$recipient_count_pct, na.rm = T),
-                            comma(max(tndoh_vax_state$recip_fully_vacc, na.rm = T), 0),
-                            max(tndoh_vax_state$recip_fully_vacc_pct, na.rm = T),
-                            comma(max(tndoh_vax_state$vaccine_count, na.rm = T), 0))
-         ) +
-    theme_void() +
-    theme(legend.position = "left") 
-  
+  ggplot() +
+  geom_sf(data = TN_counties) +
+  geom_sf(aes(geometry = geometry,
+              fill = recipient_count_pct),
+          color = "grey30",
+          inherit.aes = F) +
+  geom_sf_text(aes(label=sprintf("%0.1f%%", recipient_count_pct), 
+                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths, pct_pos), 
+                   geometry = geometry, 
+                   color = cut(recipient_count_pct, 2)), 
+               size = 3) + 
+  viridis::scale_fill_viridis(option = "C", direction = 1) +
+  scale_color_manual(values = c("white", "black"), guide = F) +
+  labs(fill = "%Pop.:",
+       title = paste0("Vaccination Coverage (latest update on ", latest_vax_date, ")"),
+       subtitle = sprintf("First Vaccinations: %s (%1.1f%% of TN Population)\nCompleted Vacc. : %s (%1.1f%% of Pop.)\nTotal Vaccinations: %s",
+                          comma(max(tndoh_vax_state$recipient_count, na.rm = T), 0),
+                          max(tndoh_vax_state$recipient_count_pct, na.rm = T),
+                          comma(max(tndoh_vax_state$recip_fully_vacc, na.rm = T), 0),
+                          max(tndoh_vax_state$recip_fully_vacc_pct, na.rm = T),
+                          comma(max(tndoh_vax_state$vaccine_count, na.rm = T), 0))
+  ) +
+  theme_void() +
+  theme(legend.position = "left") 
+
+plot_immune <- 
+  tndoh_vax_county_current %>% 
+  filter(date == latest_vax_date,
+         !is.na(statefp)) %>% 
+  ggplot() +
+  geom_sf(data = TN_counties) +
+  geom_sf(aes(geometry = geometry,
+              fill = immune_pct),
+          color = "grey30",
+          inherit.aes = F) +
+  geom_sf_text(aes(label=sprintf("%0.1f%%", immune_pct), 
+                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths, pct_pos), 
+                   geometry = geometry, 
+                   color = cut(immune_pct, 2)), 
+               size = 3) + 
+  viridis::scale_fill_viridis(option = "C", direction = 1) +
+  scale_color_manual(values = c("white", "black"), guide = F) +
+  labs(fill = "%Pop.:",
+       title = "Vaccination + Documented Prior Infection") +
+  theme_void() +
+  theme(legend.position = "left") 
+
+cowplot::plot_grid(plot_vacc, plot_immune,
+                   nrow = 2)
+
 ```
 
 ## Rolling 7-Day Averages & Top 10 Most Cases
