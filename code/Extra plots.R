@@ -1,4 +1,4 @@
-tndoh_age$age.f %>% unique()
+# tndoh_age$age.f %>% unique()
 tndoh_age %>% 
   filter(date >= lubridate::ymd("2021-02-15"),
          age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
@@ -14,7 +14,7 @@ tndoh_age %>%
 
 pl_deaths_age <-
   tndoh_age %>% 
-  filter(date >= lubridate::ymd("2021-02-15"),
+  filter(date >= lubridate::ymd("2020-10-15"),
          age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
   ggplot(aes(x = date,
              y = ar_new_deaths_100k_7davg,
@@ -30,11 +30,12 @@ pl_deaths_age <-
 
 pl_cases_age <-
   tndoh_age %>% 
-    filter(date >= lubridate::ymd("2020-06-01"),
-           date <= lubridate::ymd("2020-08-01")) %>%            
+    # filter(date >= lubridate::ymd("2020-06-01")) %>% 
+           # date <= lubridate::ymd("2020-08-01")) %>%            
     # filter(date >= lubridate::ymd("2021-06-01")) %>% 
-  # filter(date >= lubridate::ymd("2021-05-01"),
-  #        age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
+  filter(date >= lubridate::ymd("2020-10-15"),
+         # filter(date >= lubridate::ymd("2021-02-15"),
+         age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
   ggplot(aes(x = date,
              y = ar_new_cases_100k_7davg,
              fill = age.f)) +
