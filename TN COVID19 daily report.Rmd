@@ -940,7 +940,8 @@ plot_state_trends <-
   mutate(pos_pct_today = pos_pct_today*100) %>%  
   # select(date, new_cases_7davg)
   # select(date, new_cases, new_deaths, new_tests, pos_pct_today) %>%  
-  select(date, new_cases, new_hosp, new_deaths, new_tests, pos_pct_today, new_vaccine_count) %>% 
+  select(date, new_cases, new_deaths, pos_pct_today, new_vaccine_count) %>% 
+  # select(date, new_cases, new_hosp, new_deaths, new_tests, pos_pct_today, new_vaccine_count) %>% 
   pivot_longer(cols = -date,
                names_to = "variable",
                values_to = "value") %>%  
@@ -952,11 +953,11 @@ plot_state_trends <-
 #   plot_state_trends +
   geom_line(aes(date, value), size = 0.6, color = "grey") +
   geom_line(aes(date, value_7davg), size = 1, color = "red") +
-  scale_y_continuous(sec.axis = sec_axis( trans=~./TN_pop2019*10^5, name="per 100k Population")) +
+  # scale_y_continuous(sec.axis = sec_axis( trans=~./TN_pop2019*10^5, name="per 100k Population")) +
   labs(x=NULL,
        y="Rolling 7-day Average",
        title = "TN State Trends") +
-  facet_wrap(~variable, scales = "free_y", nrow = 2,
+  facet_wrap(~variable, scales = "free_y", nrow = 1,
              labeller = labeller(variable = variable.labs)) +
   theme(strip.text = element_text(size = 14))
 
@@ -995,7 +996,7 @@ plot_top10_counties <-
 
 cowplot::plot_grid(plot_state_trends,
                    plot_top10_counties,
-                   nrow = 2, rel_heights = c(1.5,2))
+                   nrow = 2, rel_heights = c(1.25,2))
 ```
 
 ## Top 10: Largest Increase in Cases
@@ -1270,8 +1271,7 @@ TN_heatmap_100k <-
   ggplot(aes(x = date,
              y = county_bynewcases,
              fill = new_cases_per100kpop_7davg)) +
-  geom_tile(aes(fill = new_cases_per100kpop_7davg,
-                color = new_cases_per100kpop_7davg)) +  
+  geom_tile(aes(fill = new_cases_per100kpop_7davg)) +  
   viridis::scale_fill_viridis(labels = scales::comma,
                                  limits = c(0, n_ul), oob = scales::squish,
                               option = "plasma") +
@@ -1301,11 +1301,11 @@ TN_heatmap_100k
 
 -   12/20/2020: Increased upper limit to 200 because 125 just wasn't enough.
 
-## New cases and Hospitalizations by county
+## New cases by county
 
 <b>Note:</b> assignment of new cases to county usually lags the total count. The State Health Dept. assigns cases to county of residence, rather than testing site. Individual county health departmens may report numbers differently, such as the number of cases <b>diagnosed within the county</b>, regardless of residence
 
-```{r fig.height=8, fig.width=10, message=FALSE, warning=FALSE}
+```{r fig.height=10, fig.width=12, message=FALSE, warning=FALSE}
 # fig 2 State ####
 
 pl_tnmap_tnsdc <-
@@ -1358,27 +1358,27 @@ pl_tnmap_7dDelta <-
   theme_void() +
   theme(legend.position = "left")  
 
-pl_tnmap_newhosp <-
-  tndoh_countynew %>%  
-  filter(!is.na(date)) %>%  
-  filter(date == max(date)) %>%  
-  ggplot() +
 # pl_tnmap_newhosp <-
-#   pl_tnmap_newhosp +
-  geom_sf(data = TN_counties) +
-  geom_sf(aes(geometry = geometry,
-              fill = as.numeric(new_hospitalized)),
-          inherit.aes = F) +
-  geom_sf_text(aes(label=new_hospitalized, geometry = geometry), 
-               color = "black",
-               # color = cut(new_hospitalized, 2)), 
-               size = 3) + 
-  scale_fill_gradient(low = "white", high = "red", 
-                      limits = c(0, max(tndoh_countynew$new_hospitalized [tndoh_countynew$date == max(tndoh_countynew$date, na.rm = T)], na.rm = T)))  +
-  scale_color_manual(values = c( "white", "black"), guide = F) +
-  labs(fill = "New\nHospitalizations:") +
-  theme_void() +
-  theme(legend.position = "left")  
+#   tndoh_countynew %>%  
+#   filter(!is.na(date)) %>%  
+#   filter(date == max(date)) %>%  
+#   ggplot() +
+# # pl_tnmap_newhosp <-
+# #   pl_tnmap_newhosp +
+#   geom_sf(data = TN_counties) +
+#   geom_sf(aes(geometry = geometry,
+#               fill = as.numeric(new_hospitalized)),
+#           inherit.aes = F) +
+#   geom_sf_text(aes(label=new_hospitalized, geometry = geometry), 
+#                color = "black",
+#                # color = cut(new_hospitalized, 2)), 
+#                size = 3) + 
+#   scale_fill_gradient(low = "white", high = "red", 
+#                       limits = c(0, max(tndoh_countynew$new_hospitalized [tndoh_countynew$date == max(tndoh_countynew$date, na.rm = T)], na.rm = T)))  +
+#   scale_color_manual(values = c( "white", "black"), guide = F) +
+#   labs(fill = "New\nHospitalizations:") +
+#   theme_void() +
+#   theme(legend.position = "left")  
 
 pl_tnmap_new_tnsdc <-
   tndoh_countynew %>%  
@@ -1402,16 +1402,41 @@ pl_tnmap_new_tnsdc <-
   theme(legend.position = "left")  
 # ggsave(here::here("figures/pl_tnmap_new.jpg"), dpi = 600, width = 12, height = 4, units = "in")
 
+pl_cases_pct <-
+  tndoh_countynew %>%    
+  # filter(date == max(date, na.rm = T)-1) %>%  
+  filter(date == max(date, na.rm = T)) %>%
+  ggplot() +
+# pl_cases <-
+#   pl_cases +
+  geom_sf(data = TN_counties) +
+  geom_sf(aes(geometry = geometry,
+              fill = total_cases_per100kpop),
+          color = "grey30",
+          inherit.aes = F) +
+  geom_sf_text(aes(label=sprintf("%0.1f%%", total_cases_per100kpop/1000), 
+                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_cases, pct_pos), 
+                   geometry = geometry, 
+                   color = cut(total_cases_per100kpop, 2)), 
+               size = 3) + 
+  viridis::scale_fill_viridis(option = "C", direction = 1) +
+  scale_color_manual(values = c("white", "black"), guide = F) +
+  # scale_color_manual(values = c( "black", "white"), guide = F) +
+  labs(fill = "Total Affected\n(Cases %Pop.):") +
+  theme_void() +
+  theme(legend.position = "left") 
+
 
 pl_FINAL_tnsdc <-
   cowplot::plot_grid(title_tnsdc,
                    pl_tnmap_new_tnsdc,
                    pl_tnmap_7dDelta,
-                   pl_tnmap_newhosp,
+                   # pl_tnmap_newhosp,
                    # pl_tnmap_newtests_tnsdc,
                    pl_tnmap_tnsdc,
+                   pl_cases_pct,
                    nrow = 5,
-                   rel_heights = c(.1,1,1,1, 1),
+                   rel_heights = c(.1,1,1, 1, 1),
                    align = "y")
   unclassified <- 
     tndoh_countynew %>%  
@@ -1428,20 +1453,20 @@ pl_FINAL_tnsdc <-
       rows=NULL, cols = NULL,
       theme = gridExtra::ttheme_minimal(base_size = 10)),
       xmin=.85, xmax=.95, ymin=0.66, ymax=.9) +
-    annotation_custom(gridExtra::tableGrob(
-      tibble(
-        Category = unclassified$county,
-        Cases = unclassified$new_hospitalized), 
-      rows=NULL, cols = NULL,
-      theme = gridExtra::ttheme_minimal(base_size = 10)),
-      xmin=.85, xmax=.95, ymin=0.31, ymax=.275) +
+    # annotation_custom(gridExtra::tableGrob(
+    #   tibble(
+    #     Category = unclassified$county,
+    #     Cases = unclassified$new_hospitalized), 
+    #   rows=NULL, cols = NULL,
+    #   theme = gridExtra::ttheme_minimal(base_size = 10)),
+    #   xmin=.85, xmax=.95, ymin=0.31, ymax=.275) +
     annotation_custom(gridExtra::tableGrob(
       tibble(
         Category = unclassified$county,
         Cases = unclassified$total_cases), 
       rows=NULL, cols = NULL,
       theme = gridExtra::ttheme_minimal(base_size = 10)),
-      xmin=.85, xmax=.95, ymin=0.01, ymax=.125) 
+      xmin=.85, xmax=.95, ymin=0.26, ymax=.375) 
   
 
 
@@ -1452,7 +1477,31 @@ pl_FINAL_tnsdc <-
 *The estimate of case fatality is presented as the crude deaths/cases ratio, and is not adjusted for age. This could markedly affect the rate in different counties. This is also affected by the ability to test and identify as many cases as possible, which may differ by county.*
 
 ```{r fig.height=9, fig.width=12, message=FALSE, warning=FALSE}
-pl_deaths <-
+pl_deaths_total <-
+  tndoh_countynew %>%    
+  filter(date == max(date, na.rm = T))  %>%
+  # filter(date == max(date, na.rm = T)-1)  %>%  
+  ggplot() +
+  # pl_deaths <-
+  #   pl_deaths +
+  geom_sf(data = TN_counties) +
+  geom_sf(aes(geometry = geometry,
+              fill = total_deaths),
+          color = "grey30",
+          inherit.aes = F) +
+  geom_sf_text(aes(label=sprintf("%0.0f", total_deaths), 
+                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths, pct_pos), 
+                   geometry = geometry, 
+                   color = cut(total_deaths, 2)), 
+               size = 3) + 
+  viridis::scale_fill_viridis(option = "C", direction = 1) +
+  scale_color_manual(values = c("white", "black"), guide = F) +
+  # scale_color_manual(values = c( "black", "white"), guide = F) +
+  labs(fill = "Total Deaths:") +
+  theme_void() +
+  theme(legend.position = "left") 
+
+pl_deaths_percapita <-
   tndoh_countynew %>%    
   filter(date == max(date, na.rm = T))  %>%
   # filter(date == max(date, na.rm = T)-1)  %>%  
@@ -1465,17 +1514,16 @@ pl_deaths <-
           color = "grey30",
           inherit.aes = F) +
   geom_sf_text(aes(label=sprintf("%0.0f", total_deaths_per100kpop), 
-                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths, pct_pos), 
+                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths_per100kpop, pct_pos), 
                    geometry = geometry, 
                    color = cut(total_deaths_per100kpop, 2)), 
                size = 3) + 
   viridis::scale_fill_viridis(option = "C", direction = 1) +
   scale_color_manual(values = c("white", "black"), guide = F) +
   # scale_color_manual(values = c( "black", "white"), guide = F) +
-  labs(fill = "Deaths per\n100K Pop.:") +
+  labs(fill = "Total Deaths\nper 100k Pop.:") +
   theme_void() +
   theme(legend.position = "left") 
-
 
 
 pl_cfr <-
@@ -1507,10 +1555,10 @@ pl_cfr <-
 
 
 cowplot::plot_grid(title_tnsdc, 
-                   pl_deaths,
-                   pl_tnmap_tnsdc, 
+                   pl_deaths_total,
+                   pl_deaths_percapita,
                    pl_cfr,
-                   nrow = 4, rel_heights = c(.1,1,1, 1))
+                   nrow = 4, rel_heights = c(.1,1,1,1))
 # ggsave(here::here("figures/pl_deaths_map.jpg"), dpi = 600, width = 12, height = 6, units = "in")
 
 ```
@@ -1521,55 +1569,7 @@ The estimated Tennessee county populations are taken from the US Census (2019 es
 
 ```{r fig.height=9, fig.width=12, message=FALSE, warning=FALSE}
 
-pl_deaths <-
-  tndoh_countynew %>%    
-  # filter(date == max(date, na.rm = T)-1) %>%  
-  filter(date == max(date, na.rm = T)) %>%
-  ggplot() +
-  # pl_deaths <-
-  #   pl_deaths +
-  geom_sf(data = TN_counties) +
-  geom_sf(aes(geometry = geometry,
-              fill = total_deaths_per100kpop),
-          color = "grey30",
-          inherit.aes = F) +
-  geom_sf_text(aes(label=sprintf("%0.0f", total_deaths_per100kpop), 
-                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths, pct_pos), 
-                   geometry = geometry, 
-                   color = cut(total_deaths_per100kpop, 2)), 
-               size = 3) + 
-  viridis::scale_fill_viridis(option = "C", direction = 1) +
-  scale_color_manual(values = c("white", "black"), guide = F) +
-  # scale_color_manual(values = c( "black", "white"), guide = F) +
-  labs(fill = "Deaths per\n100K Pop.:") +
-  theme_void() +
-  theme(legend.position = "left") 
-
-pl_cases <-
-  tndoh_countynew %>%    
-  # filter(date == max(date, na.rm = T)-1) %>%  
-  filter(date == max(date, na.rm = T)) %>%
-  ggplot() +
-# pl_cases <-
-#   pl_cases +
-  geom_sf(data = TN_counties) +
-  geom_sf(aes(geometry = geometry,
-              fill = total_cases_per100kpop),
-          color = "grey30",
-          inherit.aes = F) +
-  geom_sf_text(aes(label=sprintf("%0.1f%%", total_cases_per100kpop/1000), 
-                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_cases, pct_pos), 
-                   geometry = geometry, 
-                   color = cut(total_cases_per100kpop, 2)), 
-               size = 3) + 
-  viridis::scale_fill_viridis(option = "C", direction = 1) +
-  scale_color_manual(values = c("white", "black"), guide = F) +
-  # scale_color_manual(values = c( "black", "white"), guide = F) +
-  labs(fill = "Population % Affected\n(Cases %Pop.):") +
-  theme_void() +
-  theme(legend.position = "left") 
-
-pl_newcases <-
+pl_newcases_percapita <-
   tndoh_countynew %>%  #select(new_cases_per100kpop_7davg)   
   filter(date == max(date, na.rm = T)) %>%
   # filter(date == max(date, na.rm = T)-1) %>%  
@@ -1593,34 +1593,53 @@ pl_newcases <-
   theme_void() +
   theme(legend.position = "left") 
 
-pl_cfr <-
-  tndoh_countynew %>%  
-    mutate(total_tests_pctpop = total_tests/population*100000) %>%  
-    # select(total_tests_per100kpop)   
+# pl_test_percapita <-
+#   tndoh_countynew %>%  
+#     mutate(total_tests_pctpop = total_tests/population*100000) %>%  
+#     # select(total_tests_per100kpop)   
+#   filter(date == max(date, na.rm = T)) %>%
+#   # filter(date == max(date, na.rm = T)-1) %>%  
+#   ggplot() +
+#   # pl_cfr <-
+#   #   pl_cfr +
+#   geom_sf(data = TN_counties) +
+#   geom_sf(aes(geometry = geometry,
+#               fill = total_tests_pctpop),
+#           color = "grey30",
+#           inherit.aes = F) +
+#   geom_sf_text(aes(label=sprintf("%0.1f ", total_tests_pctpop/100), 
+#                    # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_cases, pct_pos), 
+#                    geometry = geometry, 
+#                    color = cut(total_tests_pctpop, 2)), 
+#                size = 3) + 
+#   viridis::scale_fill_viridis(option = "C", direction = 1) +
+#   scale_color_manual(values = c("white", "black"), guide = F) +
+#   # scale_color_manual(values = c( "black", "white"), guide = F) +
+#   labs(fill = "Tests per\n100k Population:") +
+#   theme_void() +
+#   theme(legend.position = "left") 
+
+pl_test_positivity <-
+  tndoh_countynew %>%
   filter(date == max(date, na.rm = T)) %>%
-  # filter(date == max(date, na.rm = T)-1) %>%  
   ggplot() +
-  # pl_cfr <-
-  #   pl_cfr +
   geom_sf(data = TN_counties) +
   geom_sf(aes(geometry = geometry,
-              fill = total_tests_pctpop),
+              fill = new_testpos_pct_7davg),
           color = "grey30",
           inherit.aes = F) +
-  geom_sf_text(aes(label=sprintf("%0.1f ", total_tests_pctpop/100), 
-                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_cases, pct_pos), 
-                   geometry = geometry, 
-                   color = cut(total_tests_pctpop, 2)), 
-               size = 3) + 
+  geom_sf_text(aes(label=sprintf("%0.1f ", new_testpos_pct_7davg),
+                   geometry = geometry,
+                   color = cut(new_testpos_pct_7davg, 2)),
+               size = 3) +
   viridis::scale_fill_viridis(option = "C", direction = 1) +
   scale_color_manual(values = c("white", "black"), guide = F) +
-  # scale_color_manual(values = c( "black", "white"), guide = F) +
-  labs(fill = "Tests per\n100k Population:") +
+  labs(fill = "Test+%\n(7d avg):") +
   theme_void() +
-  theme(legend.position = "left") 
+  theme(legend.position = "left")
 
-cowplot::plot_grid(  title_tnsdc, pl_newcases,pl_deaths, pl_cases,pl_cfr,
-                   nrow = 5, rel_heights = c(.1,1,1,1, 1))
+cowplot::plot_grid(title_tnsdc, pl_newcases_percapita, pl_cases_pct, pl_test_positivity,
+                   nrow = 4, rel_heights = c(.1,1,1,1))
 # ggsave(here::here("figures/pl_deaths_map.jpg"), dpi = 600, width = 12, height = 6, units = "in")
 
 ```
@@ -1678,20 +1697,13 @@ us_heatmap_100k <-
   filter(date >= lubridate::ymd("2020-04-01")) %>%  
   ggplot(aes(x = date,
              y = state_bynewcases)) +
-# us_heatmap_100k <-
-#   us_heatmap_100k +
-  geom_tile(aes(fill = new_cases_state_7davg_100k,
-                color = new_cases_state_7davg_100k)) +
-  # ggiraph::geom_tile_interactive(aes(tooltip = tt,
-  #                                    data_id = state,
-  #                                    fill = new_cases_state_7davg_100k,
-  #                                    color = new_cases_state_7davg_100k)) +
+  geom_tile(aes(fill = new_cases_state_7davg_100k)) +
   viridis::scale_fill_viridis(labels = scales::comma,
                                limits = c(0, max_newcaserate_alldates), oob = scales::squish,
                               option = "plasma") +
-    viridis::scale_color_viridis(labels = scales::comma,
-                               limits = c(0, max_newcaserate_alldates), oob = scales::squish,
-                              option = "plasma") +
+  viridis::scale_color_viridis(labels = scales::comma,
+                             limits = c(0, max_newcaserate_alldates), oob = scales::squish,
+                            option = "plasma") +
   labs(fill = "Cases/100k/d\n(7dAvg)",
        color  = "Cases/100k/d\n(7dAvg)",
        x = NULL, y = NULL) +
