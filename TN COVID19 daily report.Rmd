@@ -302,12 +302,24 @@ tndoh_age <-
           tn_age_groups,
           by = "age.f") %>%  
   group_by(age.f) %>%  
-  mutate(ar_new_cases_100k = ar_newcases/populationtn_byage_2019*100000,
+  mutate(ar_new_cases_7davg = round(RcppRoll::roll_meanr(ar_newcases, 7), 1),
+         ar_new_cases_100k = ar_newcases/populationtn_byage_2019*100000,
          ar_new_cases_100k_7davg = round(RcppRoll::roll_meanr(ar_newcases, 7)/populationtn_byage_2019*100000, 1),
          ar_totaldeaths_100k    = ar_totaldeaths/populationtn_byage_2019*100000,
+         ar_new_deaths_7davg = round(RcppRoll::roll_meanr(ar_newdeaths, 7), 1),
          ar_new_deaths_100k = ar_newdeaths/populationtn_byage_2019*100000,
-         ar_new_deaths_100k_7davg = round(RcppRoll::roll_meanr(ar_newdeaths, 7)/populationtn_byage_2019*100000, 1)) 
+         ar_new_deaths_100k_7davg = round(RcppRoll::roll_meanr(ar_newdeaths, 7)/populationtn_byage_2019*100000, 1)) %>%
+  ungroup()
 
+tndoh_age <- 
+  tndoh_age %>%
+  group_by(date) %>% 
+  mutate(total_new_cases_100k_7davg = sum(ar_new_cases_100k_7davg, na.rm = T),
+         ar_proportion_100k_7davg = ar_new_cases_100k_7davg/total_new_cases_100k_7davg,
+         ar_newcases_sum_7davg = sum(ar_new_cases_7davg, na.rm = T),
+         ar_proportion_7davg = ar_new_cases_7davg/ar_newcases_sum_7davg,
+         ar_deaths_sum_7davg = sum(ar_new_deaths_7davg, na.rm = T),
+         ar_newdeaths_proportion_7davg = ar_new_deaths_7davg/ar_deaths_sum_7davg) 
 
 
 # VACCINE by age
@@ -1202,8 +1214,9 @@ leaflet() %>%
 
 ```
 
-## Year-by-Year Comparison  
+## Age Group trends
 
+### Year-by-Year Comparison
 *Note: Different scale on Y-axis*
 
 ```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
@@ -1247,6 +1260,26 @@ pl_cases_age_2021 <-
 cowplot::plot_grid(pl_cases_age_2020,
                    pl_cases_age_2021,
                    nrow = 2)
+
+```
+
+### Proportion of new cases by Age
+
+```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=6}
+# PROPORTION BY AGE ####
+
+# Unadjusted for population size
+tndoh_age %>%
+  ggplot(aes(date, ar_proportion_7davg,
+             group = age_range,
+             fill = age_range)) +
+  geom_area(color = "grey50", alpha = 0.6) +
+  scale_y_continuous(expand = c(0,0), limits = c(0,NA)) +
+  scale_x_date(expand = c(0,0), date_breaks = "3 month", date_labels = "%b %Y" ) +
+  theme(legend.position = "right") +
+  labs(x = NULL,
+       y = "Proportion of cases by Age (7d avg)",
+       fill = "Age Group")
 
 ```
 
