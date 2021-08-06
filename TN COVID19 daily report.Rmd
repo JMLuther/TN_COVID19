@@ -341,6 +341,22 @@ tndoh_age <-
          ar_recipientvax_pct = recipient_count/populationtn_byage_2019*100) %>%
   ungroup() 
 
+tndoh_age_last <- # FOR AGE PROPORTION PLOT
+  tndoh_age %>% 
+  filter(!is.na(ar_proportion_7davg)) %>% 
+  filter(date == max(date)) %>% 
+  arrange(desc(age_range)) %>% 
+  mutate(sec_axis.ticks_cases = cumsum(ar_proportion_7davg),
+         sec_axis.label_cases = sprintf("<b>%s:</b> %1.1f%%", age_range, ar_proportion_7davg*100),
+         sec_axis.ticks_deaths = cumsum(ar_newdeaths_proportion_7davg),
+         sec_axis.label_deaths = sprintf("<b>%s:</b> %1.1f%%", age_range, ar_newdeaths_proportion_7davg*100)) %>% 
+  select(age_range, ar_proportion_7davg, ar_newdeaths_proportion_7davg,
+         sec_axis.ticks_cases, sec_axis.label_cases, 
+         sec_axis.ticks_deaths, sec_axis.label_deaths) %>% 
+  mutate(sec_axis.ticks_cases_mid = (sec_axis.ticks_cases + lag(sec_axis.ticks_cases, default = 0))/2,
+         sec_axis.ticks_deaths_mid = (sec_axis.ticks_deaths + lag(sec_axis.ticks_deaths, default = 0))/2)
+
+
 # most recent vaccination by age
 vax_by_age_mostrecent <-
   tndoh_age %>% 
@@ -386,6 +402,7 @@ tndoh_countynew <-
          new_cases_county_7davg_1wkdelta = (new_cases_county_7davg - lag(new_cases_county_7davg, 7))/lag(new_cases_county_7davg, 7) 
   ) %>%  
   ungroup()
+
 
 
   
@@ -457,7 +474,7 @@ tndoh_demographics <-
 # us_data <-   sf::st_as_sf(us_data)
 # names(us_data) <- tolower(names(us_data))
 # us_data <-
-#   us_data %>%  
+#   us_data %>%
 #   filter(stusps %in% state.abb)
 # saveRDS(us_data, here::here("data_rds/us_data.rds"))
 # us_data <-  readRDS(here::here("data_rds/us_data.rds"))
@@ -1273,14 +1290,20 @@ tndoh_age %>%
   ggplot(aes(date, ar_proportion_7davg,
              group = age_range,
              fill = age_range)) +
-  geom_area(color = "grey50", alpha = 0.6) +
-  scale_y_continuous(expand = c(0,0), limits = c(0,NA)) +
-  scale_x_date(expand = c(0,0), date_breaks = "3 month", date_labels = "%b %Y" ) +
-  theme(legend.position = "right") +
-  labs(x = NULL,
-       y = "Proportion of cases by Age (7d avg)",
-       fill = "Age Group")
-
+  geom_area(color = "grey50") +
+  scale_y_continuous(expand = c(0,0), limits = c(0,NA),
+                     sec.axis = dup_axis(
+                       breaks = tndoh_age_last$sec_axis.ticks_cases_mid,
+                       labels = tndoh_age_last$sec_axis.label_cases,
+                       name = NULL
+                     )) +
+  scale_x_date(expand = c(0,0), date_breaks = "3 month", date_labels = "%b" ) +
+  theme(legend.position = "none",
+        axis.text.y.right = ggtext::element_markdown(size = 12)) +
+  labs(x = "Date",
+       y = "Proportion of cases by Age",
+       fill = "Age Group") 
+  
 ```
 
 

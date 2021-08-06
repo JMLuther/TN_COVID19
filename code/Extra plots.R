@@ -92,6 +92,32 @@ cowplot::plot_grid(pl_cases_age_2020,
                    pl_cases_age_2021,
                    nrow = 2)
 
+# PROPORTION BY AGE ####
+# Unadjusted for population size
+tndoh_age %>%
+  ggplot(aes(date, ar_proportion_7davg,
+             group = age_range,
+             fill = age_range)) +
+  geom_area(color = "grey50") +
+  scale_y_continuous(expand = c(0,0), limits = c(0,NA)) +
+  scale_x_date(expand = c(0,0), date_breaks = "3 month", date_labels = "%b" ) +
+  theme(legend.position = "right") +
+  labs(x = "Date",
+       y = "Proportion of cases by Age",
+       fill = "Age Group")
+
+# Unadjusted for population size
+tndoh_age %>%
+  ggplot(aes(date, ar_newdeaths_proportion_7davg,
+             group = age_range,
+             fill = age_range)) +
+  geom_area(color = "grey50") +
+  scale_y_continuous(expand = c(0,0), limits = c(0,NA)) +
+  scale_x_date(expand = c(0,0), date_breaks = "3 month", date_labels = "%b" ) +
+  theme(legend.position = "right") +
+  labs(x = "Date",
+       y = "Proportion of Deaths by Age",
+       fill = "Age Group")
 
 
 # AGE HEATMAP ####
