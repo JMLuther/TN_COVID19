@@ -94,17 +94,39 @@ cowplot::plot_grid(pl_cases_age_2020,
 
 # PROPORTION BY AGE ####
 # Unadjusted for population size
+tndoh_age_last <-
+  tndoh_age %>% 
+  filter(!is.na(ar_proportion_7davg)) %>% 
+  filter(date == max(date)) %>% 
+  arrange(desc(age_range)) %>% 
+  mutate(sec_axis.ticks_cases = cumsum(ar_proportion_7davg),
+         sec_axis.label_cases = sprintf("<b>%s:</b> %1.1f%%", age_range, ar_proportion_7davg*100),
+         sec_axis.ticks_deaths = cumsum(ar_newdeaths_proportion_7davg),
+         sec_axis.label_deaths = sprintf("<b>%s:</b> %1.1f%%", age_range, ar_newdeaths_proportion_7davg*100)) %>% 
+  select(age_range, ar_proportion_7davg, ar_newdeaths_proportion_7davg,
+         sec_axis.ticks_cases, sec_axis.label_cases, 
+         sec_axis.ticks_deaths, sec_axis.label_deaths) %>% 
+  mutate(sec_axis.ticks_cases_mid = (sec_axis.ticks_cases + lag(sec_axis.ticks_cases, default = 0))/2,
+         sec_axis.ticks_deaths_mid = (sec_axis.ticks_deaths + lag(sec_axis.ticks_deaths, default = 0))/2)
+
 tndoh_age %>%
   ggplot(aes(date, ar_proportion_7davg,
              group = age_range,
              fill = age_range)) +
   geom_area(color = "grey50") +
-  scale_y_continuous(expand = c(0,0), limits = c(0,NA)) +
+  scale_y_continuous(expand = c(0,0), limits = c(0,NA),
+                     sec.axis = dup_axis(
+                       breaks = tndoh_age_last$sec_axis.ticks_cases_mid,
+                       labels = tndoh_age_last$sec_axis.label_cases,
+                       name = NULL
+                     )) +
   scale_x_date(expand = c(0,0), date_breaks = "3 month", date_labels = "%b" ) +
-  theme(legend.position = "right") +
+  theme(legend.position = "none",
+        axis.text.y.right = ggtext::element_markdown()) +
   labs(x = "Date",
        y = "Proportion of cases by Age",
-       fill = "Age Group")
+       fill = "Age Group") 
+  
 
 # Unadjusted for population size
 tndoh_age %>%
