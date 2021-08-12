@@ -75,7 +75,7 @@ If you are **12** years old or older, you are eligible to get your vaccine in Na
 
 The Tennessee state information is simply a visual summary of the data directly downloaded from [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov.html), by date reported (rather than date of test). I do not attempt to model, make predictions, or give advice on how to use this data. If you want that sort of thing, go to the [VUMC Health Policy site](https://www.vumc.org/health-policy/covid-19-advisory-memos), which has developed some very good local models and Advisory Memos for Tennessee.
 
-For the most up-to-date numbers visit the [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov.html) or local health department sites. In particular, the [Metro. Nashville site](https://www.asafenashville.org/) has a very nice summary- and note that their report of daily cases usually precedes the State Health Dept, due to the verification process and assignment of county of residence at the state.
+For the most up-to-date numbers visit the [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov.html) or local health department sites. In particular, the [Metro. Nashville Dashboard](https://nashville.maps.arcgis.com/apps/MapSeries/index.html?appid=30dd8aa876164e05ad6c0a1726fc77a4) has a very nice summary.
 
 Other useful sites for following trends in Tennessee and nationally:
 
@@ -97,6 +97,8 @@ Other useful sites for following trends in Tennessee and nationally:
 
 These data are taken directly from the [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html). 
 Previously the DOH reported results by date of report, rather than date of test. They transitioned to reporting results by Date of Test on 5/10/2021, although it is not clear if data reported prior to that will be cleaned up. 
+
+*Hospitalizations*: A current summary of Hospitalizations can be found on the [TN DOH site](https://www.tn.gov/health/cedep/ncov/data/hospitalization-data/current-covid-hospitalizations.html). 
 
 ```{r import_tnsdc, message=FALSE, warning=FALSE, include=FALSE}
 # file downloads and processes all data
@@ -680,7 +682,7 @@ pl_new_tnsdc <-
                values_to = "value") %>%  
   # filter(date > lubridate::ymd("2021-01-01")) %>% 
   ggplot(aes(x = date)) +
-  geom_rect(aes(xmin = max(tndoh_daily$date)-7, xmax = max(tndoh_daily$date) + 1, ymin = -Inf, ymax = Inf),
+  geom_rect(aes(xmin = max(tndoh_daily$date)-10, xmax = max(tndoh_daily$date) + 1, ymin = -Inf, ymax = Inf),
             fill = "grey", alpha = 0.2) +
   ggiraph::geom_col_interactive(aes(y = value, fill = var, tooltip = tt_daily, data_id = date), alpha = 0.5,
                                position = "identity") +
@@ -701,7 +703,7 @@ pl_new_tnsdc <-
                                       " (", comma(tndoh_daily$total_hosp[tndoh_daily$date == max(tndoh_daily$date)], digits = 0), ")")
                     )) +
   scale_y_continuous(expand = c(0,0),
-                     sec.axis = sec_axis( trans=~./TN_pop2019*10^5, name="Cases/100k Population")) +
+                     sec.axis = sec_axis( trans = ~./TN_pop2019*10^5, name="Cases/100k Population")) +
   scale_x_date(date_breaks = "1 month", date_labels = "%b" ) +
   theme(
     legend.position = c(.01, 1), 
