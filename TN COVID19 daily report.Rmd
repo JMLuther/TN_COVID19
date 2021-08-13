@@ -1285,10 +1285,11 @@ cowplot::plot_grid(pl_cases_age_2020,
 ### Proportion of new cases by Age
 
 ```{r message=FALSE, warning=FALSE, fig.width=10, fig.height=6}
+n_ul = 200
 # PROPORTION BY AGE ####
-
 # Unadjusted for population size
-tndoh_age %>%
+pl_age_proportion <- 
+  tndoh_age %>%
   ggplot(aes(date, ar_proportion_7davg,
              group = age_range,
              fill = age_range)) +
@@ -1303,15 +1304,48 @@ tndoh_age %>%
   theme(legend.position = "none",
         axis.text.y.right = ggtext::element_markdown(size = 12)) +
   labs(x = "Date",
-       y = "Proportion of cases by Age",
+       y = "Proportion of cases by Age (Avg.)",
        fill = "Age Group") 
-  
+
+p_case_trend <-
+  tndoh_daily %>% 
+  ggplot(aes(date, 1)) +
+  geom_tile(aes(fill = new_cases_7davg_100k )) +  
+  viridis::scale_fill_viridis(limits = c(0, n_ul), oob = scales::squish,
+                              option = "plasma") +
+  scale_x_date(expand = c(0,0), date_breaks = "3 month") +
+  scale_y_continuous(expand = c(0,0), 
+                     breaks = c(1),
+                     labels = "New Case\nAvg/d") +
+  guides(fill = guide_colorbar(label.position = "bottom",
+                               barwidth = 3,
+                               label.theme = element_text(angle = 90, size = 8, 
+                                                          hjust = 0.5, vjust = 0.5))) +
+  labs(x=NULL, y = NULL, fill = NULL) +
+  theme(legend.position = "right",
+        legend.direction = "horizontal",
+        # legend.
+        axis.ticks.x = element_blank(),
+        axis.text.x = element_blank()) 
+
+p2_legend <- cowplot::get_legend(p_case_trend)
+
+p_case_trend_nolegend <- p_case_trend + theme(legend.position = "none")
+
+p_case_trend_nolegend + 
+  patchwork::inset_element(p2_legend,  0.95, 0, .94, .94, 
+                align_to = 'full', 
+                clip = F) +
+  pl_age_proportion +
+  patchwork::plot_layout(ncol = 1, heights = c(0.075,1)) 
+
+
 ```
 
 
 ## TN County Heatmap
 
-Counties are ordered by highest new cases per day (current) based on the most recent 7 day average (per 100k population). Max limit of the color scale set at `r n_ul = 200; n_ul` to increase contrast- some local outbreaks exceed this limit (eg prison outbreaks in Bledsoe, Lake, Wayne Co.)
+Counties are ordered by highest new cases per day (current) based on the most recent 7 day average (per 100k population). Max limit of the color scale set at `r n_ul` to increase contrast- some local outbreaks exceed this limit (eg prison outbreaks in Bledsoe, Lake, Wayne Co.)
 
 ```{r tn_heatmap, fig.height=10, fig.width=10}
 county_order <-
