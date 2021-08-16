@@ -64,6 +64,7 @@ All source documents for this report can be found on [github](https://github.com
 
 If you are **12** years old or older, you are eligible to get your vaccine in Nashville (for free)- Go to one of these sites to sign up:
 
+  *  To review information and options at (or near) Vanderbilt see [this site](https://www.vumc.org/coronavirus/GetVaccines) (open to the general public, do not have to be a Vanderbilt patient)   
   *  [Metro Public health site](https://www.asafenashville.org/)  
   *  [Teamup calendar of community sites](https://teamup.com/ks48yq728y9por8a6q)  
   *  [Vanderbilt Medical Center sign-up](https://covid-vaccine.app.vumc.org/schedule/#/availability) with sites in Nashville (12+), Shelbyville (18+), and Tullahoma (18+)  
@@ -1091,29 +1092,29 @@ counties_top10_decrease <-
          name %in% TN_counties$name) %>%  # exclude the pending and out-of-state
   top_n(n = -10, wt = new_cases_county_7davg_1wkdelta) %>%
   pull(name)
-# 
-# pl_best10 <-
-#  tndoh_countynew %>%
-#   filter(name %in% counties_top10_decrease) %>%
-#   ggplot() +
-#   geom_col(aes(date, new_cases), fill = "steelblue", alpha = 0.5) +
-#   geom_col(aes(date, new_deaths), fill = "red") +
-#   geom_line(aes(date, new_cases_county_7davg), color = "steelblue", size = 1) +
-#   labs(x=NULL,
-#        y="New Results by day",
-#        fill = NULL,
-#        alpha = NULL,
-#        subtitle = "New Cases by Day: 10 Counties with the largest 1-week Decrease") +
-#   ylim(0,NA) +
-#   scale_x_date(date_breaks = "3 month", date_labels = "%b" ) +
-#   theme(#axis.text.x =  element_text(angle = 90, hjust = 1),
-#         legend.position = "none",
-#         strip.text = element_text(size = 14)) +
-#   facet_wrap(~name, nrow = 2,
-#              scales = "free_y")
-# pl_best10
 
-cat("There were no counties with a decreased 7d average")
+pl_best10 <-
+ tndoh_countynew %>%
+  filter(name %in% counties_top10_decrease) %>%
+  ggplot() +
+  geom_col(aes(date, new_cases), fill = "steelblue", alpha = 0.5) +
+  geom_col(aes(date, new_deaths), fill = "red") +
+  geom_line(aes(date, new_cases_county_7davg), color = "steelblue", size = 1) +
+  labs(x=NULL,
+       y="New Results by day",
+       fill = NULL,
+       alpha = NULL,
+       subtitle = "New Cases by Day: 10 Counties with the largest 1-week Decrease") +
+  ylim(0,NA) +
+  scale_x_date(date_breaks = "3 month", date_labels = "%b" ) +
+  theme(#axis.text.x =  element_text(angle = 90, hjust = 1),
+        legend.position = "none",
+        strip.text = element_text(size = 14)) +
+  facet_wrap(~name, nrow = 2,
+             scales = "free_y")
+pl_best10
+
+# cat("There were no counties with a decreased 7d average")
 
 # ifelse(length(counties_top10_decrease) >= 1,
 #        # IF >=1 with negative trend
@@ -1351,15 +1352,35 @@ p_case_trend <-
         axis.text.x = element_blank()) 
 
 p2_legend <- cowplot::get_legend(p_case_trend)
-
 p_case_trend_nolegend <- p_case_trend + theme(legend.position = "none")
 
-p_case_trend_nolegend + 
-  patchwork::inset_element(p2_legend,  0.95, 0, .94, .94, 
-                align_to = 'full', 
-                clip = F) +
-  pl_age_proportion +
-  patchwork::plot_layout(ncol = 1, heights = c(0.075,1)) 
+
+pl_age_reference <- 
+  tn_age_groups %>% 
+  mutate(populationtn_byage_2019_prop = populationtn_byage_2019/sum(populationtn_byage_2019)) %>%
+  arrange(desc(age.f)) %>% 
+  mutate( age_prop_mid = (populationtn_byage_2019_prop + lag(populationtn_byage_2019_prop, default = 0))/2,
+          age_prop_mid_cumsum = cumsum(age_prop_mid)) %>%  
+  ggplot(aes(x=1, y = populationtn_byage_2019_prop, 
+             fill = age.f)) +
+  geom_bar(position = "stack", stat = "identity") +
+  geom_text(aes(x=1, y = age_prop_mid_cumsum, 
+                label = sprintf("%s: %2.1f%%", age.f, populationtn_byage_2019_prop*100) ),
+            size = 3) +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0,0)) +
+  labs(x="Population%\nby Age", y=NULL, fill = NULL) +
+  theme(legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        axis.line = element_blank())
+
+p_case_trend_nolegend + patchwork::inset_element(p2_legend,  0.90, 0, .95, .90, 
+                                                 align_to = 'full', 
+                                                 clip = F) + patchwork::plot_spacer() + 
+  pl_age_proportion + pl_age_reference +
+  patchwork::plot_layout(ncol = 2, heights = c(0.075,1), widths = c(1,.125)) 
+
 
 
 ```
