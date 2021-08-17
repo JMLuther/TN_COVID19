@@ -1237,7 +1237,11 @@ leaflet() %>%
 ## Age Group trends
 
 ### Year-by-Year Comparison
+
+Age strata populations are taken from the US Census estimate for TN, year 2019 estimate (the most recent available)
+
 *Note: Different scale on Y-axis*
+
 
 ```{r fig.height=9, fig.width=8, message=FALSE, warning=FALSE}
 # 2020 vs 2021 ####
