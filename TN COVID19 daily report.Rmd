@@ -868,16 +868,17 @@ total_deaths <-  sum(age_death_table$ar_totaldeaths)
 
 age_death_table %>%   
   mutate(ar_case_pct = sprintf("%1.0f%%", ar_totalcases/total_cases*100),
+         ar_cfr = sprintf("%1.3f", ar_totaldeaths/ar_totalcases*100),
          ar_death_pct = sprintf("%1.0f%%", ar_totaldeaths/total_deaths*100),
          populationtn_byage_2019 = comma(populationtn_byage_2019),
          ar_recipientvax_pct = sprintf("%1.1f%%", ar_recipientvax_pct)
   ) %>% 
-  select(age.f, populationtn_byage_2019, ar_totalcases, ar_case_pct, ar_totaldeaths, ar_death_pct, ar_totaldeaths_100k, ar_totaldeaths_pct, ar_recipientvax_pct) %>%
+  select(age.f, populationtn_byage_2019, ar_totalcases, ar_case_pct, ar_totaldeaths, ar_cfr, ar_death_pct, ar_totaldeaths_100k, ar_totaldeaths_pct, ar_recipientvax_pct) %>%
   filter(!is.na(age.f)) %>% 
   htmlTable::htmlTable(total=F, align = "r", align.header = "r", rnames = F,
                        # caption = "Age Group Estimates",
-                       header = c("Age Group", "Population (n)", "Cases", "Cases</br>(% of Total)", "Deaths", "Deaths</br>(% of Total)", "Deaths/100k", "Deaths (% in Age)", "Given 1st Vaccine (% in Age)"),
-                       tfoot = paste0("<i>Population within each age group taken from US Census estimates for TN, 2019</br>Vaccination data last updated on ", mostrecent_vax_agedate, ".</i>"),
+                       header = c("Age Group", "Population (n)", "Cases", "Cases</br>(% of Total)", "Deaths", "CFR%", "Deaths</br>(% of Total)", "Deaths/100k", "Deaths (% in Age)", "Given 1st Vaccine (% in Age)"),
+                       tfoot = paste0("<i>Population within each age group taken from US Census estimates for TN, 2019</br>CFR=Case Fatality Rate (%)<br>Vaccination data last updated on ", mostrecent_vax_agedate, ".</i>"),
                        css.cell = rbind(rep("font-size: 1.1em; padding-left: .5em; padding-right: .5em;", times=ncol(.)),
                                         matrix("padding:0 5px 0 5px;", ncol=ncol(.), nrow=nrow(.))))
 
