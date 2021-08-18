@@ -176,6 +176,7 @@ tndoh_daily <-
    
 tndoh_daily[tndoh_daily$date %in% lubridate::ymd(c("2020-07-13", "2020-07-11", "2020-06-12")), "new_tests"] <- NA_real_
 
+
 # STATE POPULATION DATA ####
 # us_data <-  readRDS(here::here("data_rds/us_data.rds"))
 us_data <- get_urbn_map("states", sf = TRUE)
@@ -212,6 +213,10 @@ tndoh_vax_state <-
          recipient_count_pct = recipient_count/TN_pop2019*100,
          recip_fully_vacc_pct = recip_fully_vacc/TN_pop2019*100) 
 
+# add trend line calculated by STL (Seasonal and Trend decomposition using Loess) 
+tndoh_daily$new_cases_ts <- ts(tndoh_daily$new_cases, frequency = 7, start = 1)
+tndoh_daily$new_cases_trend.stl <- stl(tndoh_daily$new_cases_ts, s.window = 7)$time.series[, "trend"]
+
 # create annotations
 tndoh_daily <-
   left_join(tndoh_daily, tndoh_vax_state,
@@ -235,6 +240,7 @@ tndoh_daily <-
                      <tr><td><b>New Deaths: %s</b></td></tr><br>
                      <tr><td><b>Test+ %% Today: %1.1f%%</b></td></tr><br>
                      <tr><td>New Cases 7d Avg/100k: %s</td></tr><br>
+                     <tr><td>New Cases trend: %s</td></tr><br>
                      <tr><td>Deaths 7d Avg: %1.1f</td></tr><br>
                      <tr><td>Test+ %% 7d Avg: %1.1f%%</td></tr><br>
                      <tr><td>Case Fatality Ratio: %1.2f%%</td></tr><br>
@@ -247,6 +253,7 @@ tndoh_daily <-
                      comma(new_deaths, digits = 0), 
                      pos_pct_today*100, 
                      comma(new_cases_7davg_100k, 1),
+                     comma(new_cases_trend.stl/TN_pop2019*100000, 1),
                      comma(new_deaths_7davg, digits = 0), 
                      pos_pct_7davg*100, 
                      total_deaths/total_cases*100,
@@ -389,6 +396,19 @@ tndoh_countynew <-  readxl::read_excel(here::here("data_tndoh/Public-Dataset-Cou
                                        col_types = c("date", "text", rep("numeric", tndoh_county_coln-2))) 
 
 names(tndoh_countynew) <-  tolower(names(tndoh_countynew))
+
+# create STL new case trend
+tndoh_countynew <-
+  tndoh_countynew %>% 
+  group_by(county) %>% 
+  arrange(date) %>% 
+  nest() %>% 
+  mutate(new_cases_county_ts = map(data, ~ts(.x$new_cases, frequency = 7, start = 1)),
+         new_cases_county_trend = map(new_cases_county_ts, ~stl(.x, s.window = 7)$time.series[, "trend"])) %>% 
+  select(county, data, new_cases_county_trend) %>% 
+  unnest(cols = c(data, new_cases_county_trend)) 
+
+
 tndoh_countynew <-
   tndoh_countynew %>%  
   mutate(date = lubridate::ymd(date),
@@ -398,6 +418,8 @@ tndoh_countynew <-
   arrange(date) %>%  
   mutate(new_cases_county_4davg = round(RcppRoll::roll_meanr(new_cases, 4), 1),
          new_cases_county_7davg = round(RcppRoll::roll_meanr(new_cases, 7), 1),
+         max_new_cases_trend = max(new_cases_county_trend, na.rm = T),
+         new_cases_county_trend_ratio = new_cases_county_trend/max_new_cases_trend,
          new_deaths_county_7davg = round(RcppRoll::roll_meanr(new_deaths, 7), 1),
          new_testpos_pct   = round(new_pos_tests/new_tests*100, 1),
          new_testpos_pct_7davg   = round(RcppRoll::roll_meanr(new_pos_tests, 7)/RcppRoll::roll_meanr(new_tests, 7)*100, 1),
@@ -406,9 +428,6 @@ tndoh_countynew <-
   ) %>%  
   ungroup()
 
-
-
-  
 # TN_data <- tigris::counties(state = "TN", cb = TRUE)
 # names(TN_data) <- tolower(names(TN_data))
 # TN_counties <- sf::st_as_sf(TN_data) %>%  
@@ -435,27 +454,28 @@ tndoh_countynew <-
             by = "county_lower") %>%  
   mutate(total_cases_per100kpop = total_cases/population*100000,
          new_cases_per100kpop_7davg   = new_cases_county_7davg /population*100000,
+         new_cases_county_trend_per100kpop   = new_cases_county_trend/population*100000,
          total_tests_pctpop = total_tests/population*100,
          new_tests_per100kpop   = new_tests/population*100000,
          total_deaths_per100kpop = total_deaths/population*100000) 
 
 tndoh_countynew_calc <-
   tndoh_countynew %>%  
-    group_by(date) %>%  
-    filter(tolower(county) %in% TN_counties$county_lower) %>%  # exclude out of state and pending
-    mutate(#new_testpos_pct = new_pos_tests/new_tests*100,
-           new_cases_county_7davg_rank = rank(-new_cases_county_7davg),
-           new_cases_per100kpop_7davg_rank = rank(-new_cases_per100kpop_7davg),
-           new_cases_rank = rank(-new_cases)) %>%  
-    ungroup() %>%  
-    select(county, date, new_cases_county_7davg_rank, 
-           new_cases_per100kpop_7davg_rank, new_cases_rank)
+  group_by(date) %>%  
+  filter(tolower(county) %in% TN_counties$county_lower) %>%  # exclude out of state and pending
+  mutate(#new_testpos_pct = new_pos_tests/new_tests*100,
+    new_cases_county_7davg_rank = rank(-new_cases_county_7davg),
+    new_cases_per100kpop_7davg_rank = rank(-new_cases_per100kpop_7davg),
+    new_cases_rank = rank(-new_cases)) %>%  
+  ungroup() %>%  
+  select(county, date, new_cases_county_7davg_rank, 
+         new_cases_per100kpop_7davg_rank, new_cases_rank)
+
 tndoh_countynew <-   
   left_join(tndoh_countynew,
             tndoh_countynew_calc,
             by = c("date", "county"))  
 
- 
 
 # DEMOGRAPHICS
 tndoh_demographics <- readxl::read_excel(here::here("data_tndoh/Public-Dataset-RaceEthSex.xlsx"))
@@ -669,10 +689,11 @@ tndoh_vax_county_current <-
 
 ```
 
-## Testing Update- *Interactive*
+## Recent Trend Update
 
 *interactive version- mouse/hover over bars for details.*  
 *Limited to Last 4 months for better detail*
+*New case trend statistic and line estimated by Seasonal and Trend decomposition using Loess (STL) decomposition to account for daily variation- results are similar to a 7-day average but better account for the cyclical variation.*  
 
 ```{r interactive_daily, fig.width=8, message=FALSE, warning=FALSE}
 pl_new_tnsdc <-
@@ -687,7 +708,8 @@ pl_new_tnsdc <-
             fill = "grey", alpha = 0.2) +
   ggiraph::geom_col_interactive(aes(y = value, fill = var, tooltip = tt_daily, data_id = date), alpha = 0.5,
                                position = "identity") +
-  geom_line(aes(y = new_cases_7davg),color = "steelblue", size = 1) +
+  geom_line(aes(y = new_cases_trend.stl),color = "steelblue", size = 1) +
+  # geom_line(aes(y = new_cases_7davg),color = "steelblue", size = 1) +
   labs(x=NULL,
        y="Results by day reported",
        subtitle = "Results by Day, New (Total)",
@@ -900,9 +922,10 @@ A bit of good news. Vaccination data is not updated every day- most recent data 
 
 TN now provides detail on number of recipients and number of vaccinations.
 
+[vaccintation data error- ]
 
-```{r fig.height=6, fig.width=10, message=FALSE, warning=FALSE}
-plot_vacc <- 
+```{r eval=FALSE, fig.height=6, fig.width=10, message=FALSE, warning=FALSE, include=FALSE}
+plot_vacc <-
   tndoh_vax_county_current %>% 
   filter(date == latest_vax_date,
          !is.na(statefp)) %>% 
@@ -1011,8 +1034,9 @@ plot_top10_counties <-
 # plot_top10_counties <- 
 #   plot_top10_counties +
   # geom_bar(stat = "identity") +
-  geom_col(aes(date, new_cases), fill = "steelblue", alpha = 0.5) +
+  geom_area(aes(date, new_cases), fill = "steelblue", alpha = 0.5) +
   geom_col(aes(date, new_deaths), fill = "red") +
+  # geom_line(aes(date, new_cases_county_trend), color = "steelblue", size = 1) +
   geom_line(aes(date, new_cases_county_7davg), color = "steelblue", size = 1) +
   labs(x=NULL,
        y="New Results by day",
@@ -1075,6 +1099,43 @@ plot_top10_increase
 #        print("No increase in any counties"),
 #        print(plot_top10_counties))
 ```
+
+## Counties at or near all-time peak  
+
+```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+counties_near_peak_cases <-
+  tndoh_countynew %>%   
+  ungroup() %>%  
+  filter(new_cases_county_trend_ratio >= 0.9,
+         date >= Sys.Date() - 30) %>% 
+  pull(county) %>% unique()
+
+plot_counties_near_peak <-
+  tndoh_countynew %>%  
+  filter(name %in% counties_near_peak_cases) %>% 
+  ggplot() +
+# plot_top10_increase + 
+  # geom_bar(stat = "identity") +
+  geom_area(aes(date, new_cases), fill = "steelblue", alpha = 0.5) +
+  geom_col(aes(date, new_deaths), fill = "red") +
+  geom_line(aes(date, new_cases_county_trend), color = "steelblue", size = 1) +
+  # geom_line(aes(date, new_cases_county_7davg), color = "steelblue", size = 1) +
+  labs(x=NULL,
+       y="New Results by day",
+       fill = NULL,
+       alpha = NULL,
+       subtitle = "New Cases by Day: Counties at or near all-time peak") +
+  scale_y_continuous(expand = c(0,0), limits = c(0,NA)) +
+  scale_x_date(date_breaks = "3 month", date_labels = "%b" ) +
+  theme(#axis.text.x =  element_text(angle = 90, hjust = 1),
+        legend.position = "none") +
+  facet_wrap(~name, nrow = 2, 
+             scales = "free_y")+
+  theme(strip.text = element_text(size = 14))
+
+plot_counties_near_peak
+```
+
 
 ## Best 10: Largest Decrease in Cases
 
@@ -1173,7 +1234,7 @@ county_data_byday_now <-
                 filter(date == max(date, na.rm = T)) %>%   
                 select(name, total_cases, new_cases_county_7davg, new_cases_per100kpop_7davg, new_cases_per100kpop_7davg_rank,
                        new_testpos_pct, new_testpos_pct_7davg, new_tests, new_pos_tests,
-                       new_cases_rank, new_cases, new_cases_rank,
+                       new_cases_rank, new_cases, new_cases_rank, new_cases_county_trend_ratio,
                        total_deaths, total_hospitalized)}) %>%  
   mutate(cases = replace_na(total_cases, 0),
          deaths = replace_na(total_deaths, 0)) %>%  
@@ -1189,6 +1250,7 @@ lbls <-
           Test +%% Today: %1.1f%% (%s/%s)<br/>
           Test +%% (7dAvg): %1.1f%%<br/>
           Total Deaths: %s<br/>
+          Current Case trend vs. Max: %1.1f%%<br/>
           <i>Click to view time-course</i>", 
           toupper(county_data_byday_now$name), 
           comma(county_data_byday_now$total_cases, digits = 0), 
@@ -1196,7 +1258,9 @@ lbls <-
           comma(county_data_byday_now$new_cases, digits = 0),county_data_byday_now$new_cases_rank, max(county_data_byday_now$new_cases_rank), 
           county_data_byday_now$new_testpos_pct, county_data_byday_now$new_pos_tests, county_data_byday_now$new_tests, 
           county_data_byday_now$new_testpos_pct_7davg,
-          county_data_byday_now$total_deaths) %>%  
+          county_data_byday_now$total_deaths,
+          county_data_byday_now$new_cases_county_trend_ratio*100
+          ) %>%  
   lapply(htmltools::HTML)
 
 
