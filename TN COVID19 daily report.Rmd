@@ -922,7 +922,7 @@ A bit of good news. Vaccination data is not updated every day- most recent data 
 
 TN now provides detail on number of recipients and number of vaccinations.
 
-[vaccintation data error- ]
+[error with TNDOH vaccine data]
 
 ```{r eval=FALSE, fig.height=6, fig.width=10, message=FALSE, warning=FALSE, include=FALSE}
 plot_vacc <-
