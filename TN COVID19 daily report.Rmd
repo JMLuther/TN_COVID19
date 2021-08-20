@@ -1103,9 +1103,14 @@ plot_top10_increase
 ```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 counties_near_peak_cases <-
   tndoh_countynew %>%   
-  ungroup() %>%  
+  # ungroup() %>%  
   filter(new_cases_county_trend_ratio >= 0.9,
-         date >= Sys.Date() - 30) %>% 
+         date >= Sys.Date() - 7,
+         county != "Pending") %>% 
+  group_by(county) %>% 
+  filter(new_cases_county_trend_ratio == max(new_cases_county_trend_ratio)) %>% 
+  ungroup() %>% 
+  slice_max(order_by =  new_cases_county_trend, n= 10) %>% 
   pull(county) %>% unique()
 
 plot_counties_near_peak <-
