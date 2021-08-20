@@ -922,9 +922,7 @@ A bit of good news. Vaccination data is not updated every day- most recent data 
 
 TN now provides detail on number of recipients and number of vaccinations.
 
-[error with TNDOH vaccine data]
-
-```{r eval=FALSE, fig.height=6, fig.width=10, message=FALSE, warning=FALSE, include=FALSE}
+```{r echo=TRUE, fig.height=6, fig.width=10, message=FALSE, warning=FALSE}
 plot_vacc <-
   tndoh_vax_county_current %>% 
   filter(date == latest_vax_date,
@@ -1305,30 +1303,28 @@ leaflet() %>%
 
 Age strata populations are taken from the US Census estimate for TN, year 2019 estimate (the most recent available)
 
-*Note: Different scale on Y-axis*
 
-
-```{r fig.height=9, fig.width=8, message=FALSE, warning=FALSE}
+```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
 # 2020 vs 2021 ####
-pl_cases_age_2020 <-
-  tndoh_age %>% 
-  filter(date >= lubridate::ymd("2020-06-01"), 
-         date <= {lubridate::ymd(Sys.Date()) - 365}) %>% 
-         # date <= lubridate::ymd("2020-08-01")) %>%            
-  # filter(date >= lubridate::ymd("2021-06-01")) %>% 
-  # filter(date >= lubridate::ymd("2021-05-01"),
-  #        age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
-  ggplot(aes(x = date,
-             y = ar_new_cases_100k_7davg,
-             fill = age.f)) +
-  geom_area(alpha = 0.5) +
-  theme(legend.position = "none") +
-  labs(x = NULL, y = NULL,
-       title = "One year ago: Average Daily Cases by Age Group (per 100k)") +
-  scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) +
-  facet_wrap(~age.f, nrow = 1) +
-  # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
-  theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
+# pl_cases_age_2020 <-
+#   tndoh_age %>% 
+#   filter(date >= lubridate::ymd("2020-06-01"), 
+#          date <= {lubridate::ymd(Sys.Date()) - 365}) %>% 
+#          # date <= lubridate::ymd("2020-08-01")) %>%            
+#   # filter(date >= lubridate::ymd("2021-06-01")) %>% 
+#   # filter(date >= lubridate::ymd("2021-05-01"),
+#   #        age.f %in% c("31-40", "41-50","51-60", "61-70", "71-80", "81+")) %>% 
+#   ggplot(aes(x = date,
+#              y = ar_new_cases_100k_7davg,
+#              fill = age.f)) +
+#   geom_area(alpha = 0.5) +
+#   theme(legend.position = "none") +
+#   labs(x = NULL, y = NULL,
+#        title = "One year ago: Average Daily Cases by Age Group (per 100k)") +
+#   scale_x_date(date_breaks = "1 month", date_labels = "%b", expand = c(0, 0)) +
+#   facet_wrap(~age.f, nrow = 1) +
+#   # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
+#   theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
 
 pl_cases_age_peak <-
   tndoh_age %>% 
@@ -1367,11 +1363,14 @@ pl_cases_age_2021 <-
   # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
   theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
 
-cowplot::plot_grid(pl_cases_age_2020,
-                   pl_cases_age_peak,
-                   pl_cases_age_2021,
-                   nrow = 3)
+max_y <-
+  max(layer_scales(pl_cases_age_2021)$y$range$range[[2]],
+             layer_scales(pl_cases_age_peak)$y$range$range[[2]])
+             
 
+cowplot::plot_grid(pl_cases_age_2021 + ylim(c(0, max_y)),
+                   pl_cases_age_peak + ylim(c(0, max_y)),
+                   nrow = 2)
 ```
 
 ### Proportion of new cases by Age
