@@ -1100,7 +1100,7 @@ plot_top10_increase
 
 ## Counties at or near all-time peak  
 
-```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 counties_near_peak_cases <-
   tndoh_countynew %>%   
   # ungroup() %>%  
@@ -1109,13 +1109,23 @@ counties_near_peak_cases <-
          county != "Pending") %>% 
   group_by(county) %>% 
   filter(new_cases_county_trend_ratio == max(new_cases_county_trend_ratio)) %>% 
-  ungroup() %>% 
+  ungroup()  
+```
+
+Counties at peak: `r length(counties_near_peak_cases$county)` of 95 TN counties are either at peak or within 90% of their maximum peak. Plots limited to the 10 with the highest 7-day New Case average.
+
+*limited to the 10 with the largest number of cases on average*
+
+```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+counties_near_peak_cases_top10 <-
+  counties_near_peak_cases %>% 
   slice_max(order_by =  new_cases_county_trend, n= 10) %>% 
-  pull(county) %>% unique()
+  pull(county) 
+
 
 plot_counties_near_peak <-
   tndoh_countynew %>%  
-  filter(name %in% counties_near_peak_cases) %>% 
+  filter(name %in% counties_near_peak_cases_top10) %>% 
   ggplot() +
 # plot_top10_increase + 
   # geom_bar(stat = "identity") +

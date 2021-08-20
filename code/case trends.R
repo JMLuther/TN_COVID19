@@ -18,8 +18,8 @@ tndoh_daily %>%
   filter(date >= lubridate::ymd("2021-01-01")) %>% 
   ggplot(aes(date, new_cases)) +
   geom_area(fill = "grey", alpha = 0.5) +
-  # geom_line(aes(y = new_cases_trend), color = "red", size = 1) +
-  # geom_line(aes(y = new_cases_trend.stl), color = "blue", size = 1) +
-  # geom_line(aes(y = new_cases_7davg), color = "black", size = 1) +
+  geom_line(aes(y = new_cases_trend), color = "red", size = 1) +
+  geom_line(aes(y = new_cases_trend.stl), color = "blue", size = 1) +
+  geom_line(aes(y = new_cases_7davg), color = "black", size = 1) +
   geom_line(aes(y = new_cases_trend.stl), color = "blue", size = 1) 
   
