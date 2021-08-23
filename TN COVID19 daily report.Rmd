@@ -1386,7 +1386,7 @@ max_y <-
 cowplot::plot_grid(pl_cases_age_2021 + ylim(c(0, max_y)) +
                        geom_text(data = age_death_table, size = 3, hjust = 0, vjust=1, fontface = "italic",
                                  aes(x=lubridate::ymd("2021-06-01"), y = max_y, 
-                                     label = sprintf("Vacc.%%:\n%1.1f%%", ar_recipientvax_pct) )),
+                                     label = sprintf("Vacc.:%1.1f%%", ar_recipientvax_pct) )),
                    pl_cases_age_peak + ylim(c(0, max_y)),
                    nrow = 2)
 ```
