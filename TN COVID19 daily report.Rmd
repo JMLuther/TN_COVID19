@@ -1314,7 +1314,7 @@ leaflet() %>%
 
 ## Age Group trends
 
-### Year-by-Year Comparison
+### Age Comparison by Wave  
 
 Age strata populations are taken from the US Census estimate for TN, year 2019 estimate (the most recent available)
 
@@ -1383,7 +1383,10 @@ max_y <-
              layer_scales(pl_cases_age_peak)$y$range$range[[2]])
              
 
-cowplot::plot_grid(pl_cases_age_2021 + ylim(c(0, max_y)),
+cowplot::plot_grid(pl_cases_age_2021 + ylim(c(0, max_y)) +
+                       geom_text(data = age_death_table, size = 3, hjust = 0, vjust=1, fontface = "italic",
+                                 aes(x=lubridate::ymd("2021-06-01"), y = max_y, 
+                                     label = sprintf("Vacc.%%:\n%1.1f%%", ar_recipientvax_pct) )),
                    pl_cases_age_peak + ylim(c(0, max_y)),
                    nrow = 2)
 ```
