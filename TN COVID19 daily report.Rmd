@@ -691,9 +691,7 @@ tndoh_vax_county_current <-
 
 ## Recent Trend Update
 
-*interactive version- mouse/hover over bars for details.*  
-*Limited to Last 4 months for better detail*
-*New case trend statistic and line estimated by Seasonal and Trend decomposition using Loess (STL) decomposition to account for daily variation- results are similar to a 7-day average but better account for the cyclical variation.*  
+*Interactive Figure: mouse/hover over for details.*  
 
 ```{r interactive_daily, fig.width=8, message=FALSE, warning=FALSE}
 pl_new_tnsdc <-
@@ -708,12 +706,12 @@ pl_new_tnsdc <-
             fill = "grey", alpha = 0.2) +
   ggiraph::geom_col_interactive(aes(y = value, fill = var, tooltip = tt_daily, data_id = date), alpha = 0.5,
                                position = "identity") +
-  geom_line(aes(y = new_cases_trend.stl),color = "steelblue", size = 1) +
-  # geom_line(aes(y = new_cases_7davg),color = "steelblue", size = 1) +
+  geom_line(aes(y = new_cases_trend.stl),color = "red", size = 1) +
+  geom_line(aes(y = new_cases_7davg), color = "red",  size = 0.5, linetype=2) +
   labs(x=NULL,
        y="Results by day reported",
        subtitle = "Results by Day, New (Total)",
-       caption = "Results within the past 7-10 days (shaded period)\nmay not be fully reported",
+       caption = "Solid line is time series trend. Dotted line is 7d avg\nResults within the past 7-10 days (shaded period) may not be fully reported",
        fill = NULL) +
   scale_fill_manual(values = c("steelblue",
                                "red",
@@ -744,6 +742,9 @@ ggiraph::girafe(ggobj = pl_new_tnsdc,
                   opts_tooltip(css = tooltip_css)
                 ) )
 ```
+
+*Limited to Last 4 months for better detail. New case trend statistic and line estimated by Seasonal and Trend decomposition using Loess (STL) decomposition to account for daily variation- results are similar to a 7-day average but better account for the cyclical variation.*  
+
 
 ## Today's Overview
 
