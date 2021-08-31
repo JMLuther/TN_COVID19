@@ -334,7 +334,7 @@ tndoh_age <-
 
 # VACCINE by age
  tndoh_vax_age <- readxl::read_excel(here::here("data_tndoh/COVID_VACCINE_AGE_GROUPS.XLSX"),
-                                      col_types = c("text", "date", rep("numeric", 6)))
+                                      col_types = c("text", "date", rep("numeric", 8)))
 names(tndoh_vax_age) <- tolower(names(tndoh_vax_age))
 tndoh_vax_age <-
   tndoh_vax_age %>%
@@ -659,7 +659,7 @@ cdc_currentdata_2163 <-
 # county
 tndoh_vax_county <-
   readxl::read_excel(here::here("data_tndoh/COVID_VACCINE_COUNTY_SUMMARY.XLSX"),
-                       col_types = c("date", "text", rep("numeric", 6)))
+                       col_types = c("date", "text", rep("numeric", 8)))
     
 
 names(tndoh_vax_county) <- tolower(names(tndoh_vax_county))
