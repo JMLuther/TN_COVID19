@@ -57,50 +57,6 @@ theme_set(theme_bw() +
 
 ```
 
-*Last updated: `r Sys.time()`*
-All source documents for this report can be found on [github](https://github.com/JMLuther/TN_COVID19)
-
-# **VACCINE SIGN-UP**  
-
-If you are **12** years old or older, you are eligible to get your vaccine in Nashville (for free)- Go to one of these sites to sign up:
-
-  *  To review information and options at (or near) Vanderbilt see [this site](https://www.vumc.org/coronavirus/GetVaccines) (open to the general public, do not have to be a Vanderbilt patient)   
-  *  [Metro Public health site](https://www.asafenashville.org/)  
-  *  [Teamup calendar of community sites](https://teamup.com/ks48yq728y9por8a6q)  
-  *  [Vanderbilt Medical Center sign-up](https://covid-vaccine.app.vumc.org/schedule/#/availability) with sites in Nashville (12+), Shelbyville (18+), and Tullahoma (18+)  
-
-
-# **Disclaimer**
-
-*Update 5/10/2021* New Cases now reported only by the date of detection. Will update with details once it becomes clear how these results will be mixed with the prior reporting method (date of report).
-
-The Tennessee state information is simply a visual summary of the data directly downloaded from [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov.html), by date reported (rather than date of test). I do not attempt to model, make predictions, or give advice on how to use this data. If you want that sort of thing, go to the [VUMC Health Policy site](https://www.vumc.org/health-policy/covid-19-advisory-memos), which has developed some very good local models and Advisory Memos for Tennessee.
-
-For the most up-to-date numbers visit the [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov.html) or local health department sites. In particular, the [Metro. Nashville Dashboard](https://nashville.maps.arcgis.com/apps/MapSeries/index.html?appid=30dd8aa876164e05ad6c0a1726fc77a4) has a very nice summary.
-
-Other useful sites for following trends in Tennessee and nationally:
-
--   [TN state Dept of Health Epi curves](https://www.tn.gov/health/cedep/ncov/data/epi-curves.html)\
--   [TN DOH Vaccine information](https://www.tn.gov/health/cedep/ncov/covid-19-vaccine-information.html)\
--   [The CDC: Cases and Deaths](https://covid.cdc.gov/covid-data-tracker/#cases_casesper100klast7days)
--   [The CDC: COVID Vaccine tracker](https://covid.cdc.gov/covid-data-tracker/#vaccinations) provides detail on people initiating their 1st dose, rather than just number of vaccinations (may include second shot).\
--   [Nashville trends](https://www.asafenashville.org/).\
--   [Nashville COVID-19 Dashboard](https://nashville.maps.arcgis.com/apps/MapSeries/index.html?appid=30dd8aa876164e05ad6c0a1726fc77a4) including detailed county case density map, date of test, and test turnaround times by vendor.\
--   [COVID Act Now](https://covidactnow.org/us/tn/?s=37528) lags this report by a day or so.\
--   [Our World in Data](https://ourworldindata.org/covid-mortality-risk) which describes differences in terms like "case fatality rate" and "crude mortality rate" and the "infection fatality rate."\
--   [TN Data Center](%22https://myutk.maps.arcgis.com/apps/opsdashboard/index.html#/72ce9fd4bee241f28c2f4f70f338a4e4%22) (uses data from TN DOH)
--   [COVID Tracking project](https://covidtracking.com/data#state-tn) (links data from TN DOH). The best source of data early on, no longer updating as of March 7, 2021.\
--   [New York Times](https://github.com/nytimes/covid-19-data) github data resource\
--   [Dr. David Aronoff Twitter feed](https://twitter.com/DMAronoff), Chief of Infectious Diseases at Vanderbilt\
--   [Dr. John Graves](https://twitter.com/johngraves9) and the [VUMC Health Policy site](https://www.vumc.org/health-policy/covid-19-advisory-memos)
-
-# **TN Dept of Health Data**
-
-These data are taken directly from the [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html). 
-Previously the DOH reported results by date of report, rather than date of test. They transitioned to reporting results by Date of Test on 5/10/2021, although it is not clear if data reported prior to that will be cleaned up. 
-
-*Hospitalizations*: A current summary of Hospitalizations can be found on the [TN DOH site](https://www.tn.gov/health/cedep/ncov/data/hospitalization-data/current-covid-hospitalizations.html). 
-
 ```{r import_tnsdc, message=FALSE, warning=FALSE, include=FALSE}
 # file downloads and processes all data
 # CHECKS THE AGE FILE (SMALLEST) FOR UPDATE- 
@@ -158,6 +114,52 @@ Previously the DOH reported results by date of report, rather than date of test.
 #               destfile = here::here("data_covidtracking/daily.csv"))
 
 ```
+
+
+*Last updated: `r file.info(here::here("data_tndoh/Public-Dataset-Age.xlsx"))$ctime`*
+All source documents for this report can be found on [github](https://github.com/JMLuther/TN_COVID19)
+
+# **VACCINE SIGN-UP**  
+
+If you are **12** years old or older, you are eligible to get your vaccine in Nashville (for free)- Go to one of these sites to sign up:
+
+  *  To review information and options at (or near) Vanderbilt see [this site](https://www.vumc.org/coronavirus/GetVaccines) (open to the general public, do not have to be a Vanderbilt patient)   
+  *  [Metro Public health site](https://www.asafenashville.org/)  
+  *  [Teamup calendar of community sites](https://teamup.com/ks48yq728y9por8a6q)  
+  *  [Vanderbilt Medical Center sign-up](https://covid-vaccine.app.vumc.org/schedule/#/availability) with sites in Nashville (12+), Shelbyville (18+), and Tullahoma (18+)  
+
+
+# **Disclaimer**
+
+*Update 5/10/2021* New Cases now reported only by the date of detection. Will update with details once it becomes clear how these results will be mixed with the prior reporting method (date of report).
+
+The Tennessee state information is simply a visual summary of the data directly downloaded from [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov.html), by date reported (rather than date of test). I do not attempt to model, make predictions, or give advice on how to use this data. If you want that sort of thing, go to the [VUMC Health Policy site](https://www.vumc.org/health-policy/covid-19-advisory-memos), which has developed some very good local models and Advisory Memos for Tennessee.
+
+For the most up-to-date numbers visit the [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov.html) or local health department sites. In particular, the [Metro. Nashville Dashboard](https://nashville.maps.arcgis.com/apps/MapSeries/index.html?appid=30dd8aa876164e05ad6c0a1726fc77a4) has a very nice summary.
+
+Other useful sites for following trends in Tennessee and nationally:
+
+-   [TN state Dept of Health Epi curves](https://www.tn.gov/health/cedep/ncov/data/epi-curves.html)\
+-   [TN DOH Vaccine information](https://www.tn.gov/health/cedep/ncov/covid-19-vaccine-information.html)\
+-   [The CDC: Cases and Deaths](https://covid.cdc.gov/covid-data-tracker/#cases_casesper100klast7days)
+-   [The CDC: COVID Vaccine tracker](https://covid.cdc.gov/covid-data-tracker/#vaccinations) provides detail on people initiating their 1st dose, rather than just number of vaccinations (may include second shot).\
+-   [Nashville trends](https://www.asafenashville.org/).\
+-   [Nashville COVID-19 Dashboard](https://nashville.maps.arcgis.com/apps/MapSeries/index.html?appid=30dd8aa876164e05ad6c0a1726fc77a4) including detailed county case density map, date of test, and test turnaround times by vendor.\
+-   [COVID Act Now](https://covidactnow.org/us/tn/?s=37528) lags this report by a day or so.\
+-   [Our World in Data](https://ourworldindata.org/covid-mortality-risk) which describes differences in terms like "case fatality rate" and "crude mortality rate" and the "infection fatality rate."\
+-   [TN Data Center](%22https://myutk.maps.arcgis.com/apps/opsdashboard/index.html#/72ce9fd4bee241f28c2f4f70f338a4e4%22) (uses data from TN DOH)
+-   [COVID Tracking project](https://covidtracking.com/data#state-tn) (links data from TN DOH). The best source of data early on, no longer updating as of March 7, 2021.\
+-   [New York Times](https://github.com/nytimes/covid-19-data) github data resource\
+-   [Dr. David Aronoff Twitter feed](https://twitter.com/DMAronoff), Chief of Infectious Diseases at Vanderbilt\
+-   [Dr. John Graves](https://twitter.com/johngraves9) and the [VUMC Health Policy site](https://www.vumc.org/health-policy/covid-19-advisory-memos)
+
+# **TN Dept of Health Data**
+
+These data are taken directly from the [TN state Dept of Health](https://www.tn.gov/health/cedep/ncov/data/downloadable-datasets.html). 
+Previously the DOH reported results by date of report, rather than date of test. They transitioned to reporting results by Date of Test on 5/10/2021, although it is not clear if data reported prior to that will be cleaned up. 
+
+*Hospitalizations*: A current summary of Hospitalizations can be found on the [TN DOH site](https://www.tn.gov/health/cedep/ncov/data/hospitalization-data/current-covid-hospitalizations.html). 
+
 
 ```{r load_tnsdc, echo=TRUE, message=FALSE, warning=FALSE}
 # READ IN AND format data ####
