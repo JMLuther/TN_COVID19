@@ -116,10 +116,11 @@ theme_set(theme_bw() +
 ```
 
 
-*Last updated: `r file.info(here::here("data_tndoh/Public-Dataset-Age.xlsx"))$ctime`*
-All source documents for this report can be found on [github](https://github.com/JMLuther/TN_COVID19)
+*Last Data Update: `r file.info(here::here("data_tndoh/Public-Dataset-County-New.xlsx"))$mtime`*. All source documents for this report can be found on [github](https://github.com/JMLuther/TN_COVID19)
 
 # **VACCINE SIGN-UP**  
+
+For a reliable discussion of COVID-19, vaccines, and emerging variants, listen to [Dr. Aronoff's Medicine Grand Rounds](https://www.youtube.com/watch?v=Vh8p6OJuE4U&t=37s&ab_channel=VUMCDepartmentOfMedicine) from August 2021.
 
 If you are **12** years old or older, you are eligible to get your vaccine in Nashville (for free)- Go to one of these sites to sign up:
 
