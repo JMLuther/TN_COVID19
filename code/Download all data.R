@@ -11,6 +11,12 @@ download.file(url = #"https://www.tn.gov/content/dam/tn/health/documents/cedep/n
                 "https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-County-New.XLSX",
               mode = 'wb',
               destfile = here::here("data_tndoh/Public-Dataset-County-New.xlsx"))
+# COUNTY AGE GROUPS
+download.file(url = "https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-Daily-County-Age-Group.XLSX",
+              mode = 'wb',
+              destfile = here::here("data_tndoh/Public-Dataset-Daily-County-Age-Group.xlsx"))
+
+
 # DAILY STATE TOTALS
 download.file(url = #"https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-Daily-Case-Info.xlsx",
                 "https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-Daily-Case-Info.XLSX",
