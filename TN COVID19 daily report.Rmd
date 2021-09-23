@@ -1482,7 +1482,7 @@ pl_age_proportion <-
   ggplot(aes(date, ar_proportion_7davg,
              group = age_range,
              fill = age_range)) +
-  geom_area(color = "grey50") +
+  geom_area(color = "grey50", alpha = 0.6) +
   scale_y_continuous(expand = c(0,0), limits = c(0,NA),
                      sec.axis = dup_axis(
                        breaks = tndoh_age_last$sec_axis.ticks_cases_mid,
@@ -1505,7 +1505,7 @@ p_case_trend <-
   scale_x_date(expand = c(0,0), date_breaks = "3 month") +
   scale_y_continuous(expand = c(0,0), 
                      breaks = c(1),
-                     labels = "New Case\nAvg/d") +
+                     labels = "New Cases\nAvg/d/100k") +
   guides(fill = guide_colorbar(label.position = "bottom",
                                barwidth = 3,
                                label.theme = element_text(angle = 90, size = 8, 
@@ -1529,7 +1529,7 @@ pl_age_reference <-
           age_prop_mid_cumsum = cumsum(age_prop_mid)) %>%  
   ggplot(aes(x=1, y = populationtn_byage_2019_prop, 
              fill = age.f)) +
-  geom_bar(position = "stack", stat = "identity") +
+  geom_bar(position = "stack", stat = "identity", alpha = 0.6) +
   geom_text(aes(x=1, y = age_prop_mid_cumsum, 
                 label = sprintf("%s: %2.1f%%", age.f, populationtn_byage_2019_prop*100) ),
             size = 3) +
