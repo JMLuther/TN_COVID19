@@ -1158,7 +1158,11 @@ plot_counties_near_peak <-
              scales = "free_y")+
   theme(strip.text = element_text(size = 14))
 
-plot_counties_near_peak
+# if_else(length(plot_counties_near_peak$data$county)>0,
+#    print(plot_counties_near_peak),
+   print("No counties currently at peak")
+   # )
+
 ```
 
 
