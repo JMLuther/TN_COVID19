@@ -1104,10 +1104,9 @@ plot_top10_increase <-
              scales = "free_y")+
   theme(strip.text = element_text(size = 14))
 
-plot_top10_increase
-# ifelse(length(plot_top10_increase$data$county) == 0,
-#        print("No increase in any counties"),
-#        print(plot_top10_counties))
+# plot_top10_increase
+print("No increase in any counties")
+
 ```
 
 ## Counties at or near all-time peak  
@@ -1158,10 +1157,9 @@ plot_counties_near_peak <-
              scales = "free_y")+
   theme(strip.text = element_text(size = 14))
 
-# if_else(length(plot_counties_near_peak$data$county)>0,
-#    print(plot_counties_near_peak),
+# plot_counties_near_peak
+
    print("No counties currently at peak")
-   # )
 
 ```
 
