@@ -1104,8 +1104,8 @@ plot_top10_increase <-
              scales = "free_y")+
   theme(strip.text = element_text(size = 14))
 
-# plot_top10_increase
-print("No increase in any counties")
+plot_top10_increase
+# print("No increase in any counties")
 
 ```
 
