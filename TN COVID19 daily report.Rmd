@@ -1104,8 +1104,8 @@ plot_top10_increase <-
              scales = "free_y")+
   theme(strip.text = element_text(size = 14))
 
-plot_top10_increase
-# print("No increase in any counties")
+# plot_top10_increase
+print("No increase in any counties")
 
 ```
 
@@ -1689,7 +1689,8 @@ pl_tnmap_7dDelta <-
 
 pl_tnmap_new_tnsdc <-
   tndoh_countynew %>%  
-  filter(date == max(date)) %>%  
+  # filter(date == max(date)) %>%  
+  filter(date == max(date)-1) %>%  
   ggplot() +
 # pl_tnmap_new_tnsdc <-
 #   pl_tnmap_new_tnsdc +
@@ -1786,8 +1787,8 @@ pl_FINAL_tnsdc <-
 ```{r fig.height=9, fig.width=12, message=FALSE, warning=FALSE}
 pl_deaths_total <-
   tndoh_countynew %>%    
-  filter(date == max(date, na.rm = T))  %>%
-  # filter(date == max(date, na.rm = T)-1)  %>%  
+  # filter(date == max(date, na.rm = T))  %>%
+  filter(date == max(date, na.rm = T)-1)  %>%
   ggplot() +
   # pl_deaths <-
   #   pl_deaths +
@@ -1810,8 +1811,8 @@ pl_deaths_total <-
 
 pl_deaths_percapita <-
   tndoh_countynew %>%    
-  filter(date == max(date, na.rm = T))  %>%
-  # filter(date == max(date, na.rm = T)-1)  %>%  
+  # filter(date == max(date, na.rm = T))  %>%
+  filter(date == max(date, na.rm = T)-1)  %>%
   ggplot() +
   # pl_deaths <-
   #   pl_deaths +
@@ -1835,8 +1836,8 @@ pl_deaths_percapita <-
 
 pl_cfr <-
   tndoh_countynew %>%    
-  filter(date == max(date, na.rm = T)) %>%  
-  # filter(date == max(date, na.rm = T)-1) %>%  
+  # filter(date == max(date, na.rm = T)) %>%  
+  filter(date == max(date, na.rm = T)-1) %>%
   mutate(cfr = total_deaths/total_cases) %>%  
   ggplot() +
 # pl_cfr <-
