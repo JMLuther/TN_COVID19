@@ -352,7 +352,7 @@ tndoh_age <-
 
 # VACCINE by age
 tndoh_vax_age <- readxl::read_excel(here::here("data_tndoh/COVID_VACCINE_AGE_GROUPS.XLSX"),
-                                      col_types = c("text", "date", rep("numeric", 9)))
+                                      col_types = c("text", "date", rep("numeric", 8)))
 names(tndoh_vax_age) <- tolower(names(tndoh_vax_age))
 tndoh_vax_age <-
   tndoh_vax_age %>%
@@ -409,7 +409,6 @@ age_death_table <-
     ar_totaldeaths_pct = sprintf("%1.2f%%", ar_totaldeaths_100k/1000),
     ar_totaldeaths_100k = sprintf("%1.2f", ar_totaldeaths_100k)) #%>% 
   # left_join(vax_by_age_mostrecent, by = "age.f")
-
 
 # COUNTY DATA ####
 # tndoh_countynew <- readxl::read_excel(here::here("tn_data_center/TN_COVID19_CountyDaily.xlsx"))
