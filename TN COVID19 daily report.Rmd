@@ -313,10 +313,16 @@ tndoh_age <-
                                       TRUE ~ ar_totaldeaths/ar_totalcases*100))
 
 # TN age groups 2019 estimates(taken from https://www.census.gov/data/tables/time-series/demo/popest/2010s-state-detail.html)
-tn_age_groups <- 
+tn_age_groups <-
   tibble::tibble(age.f = factor(c("0-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+"),
                                     levels = c("0-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+")),
-                 populationtn_byage_2019 = c(821984L, 855582L, 942211L, 887898L, 850125L, 893578L, 808164L, 516865L, 252767L)) 
+                 populationtn_byage_2019 = c(908244, 858307, 943700, 879850, 854356, 893802, 782810, 481538, 226567))
+                                         # c(821984, 855582, 942211, 887898, 850125, 893578, 808164, 516865, 252767)) # OLD ESTIMATES; RECALCULATED
+tn_age_groups2 <-
+  tibble::tibble(age.f2 = factor(c("<5", "5-11", "12-15", "16-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+"), # 16-20 needs to match other age category
+                        levels = c("<5", "5-11", "12-15", "16-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+")),
+                 populationtn_byage_2019_B = c(408605, 585900, 343637, 428409, 943700, 879850, 854356, 893802, 782810, 481538, 226567))
+
 
 tndoh_age <- 
   left_join(tndoh_age,
@@ -340,26 +346,34 @@ tndoh_age <-
          ar_newcases_sum_7davg = sum(ar_new_cases_7davg, na.rm = T),
          ar_proportion_7davg = ar_new_cases_7davg/ar_newcases_sum_7davg,
          ar_deaths_sum_7davg = sum(ar_new_deaths_7davg, na.rm = T),
-         ar_newdeaths_proportion_7davg = ar_new_deaths_7davg/ar_deaths_sum_7davg) 
+         ar_newdeaths_proportion_7davg = ar_new_deaths_7davg/ar_deaths_sum_7davg) %>% 
+  ungroup()
 
 
 # VACCINE by age
- tndoh_vax_age <- readxl::read_excel(here::here("data_tndoh/COVID_VACCINE_AGE_GROUPS.XLSX"),
-                                      col_types = c("text", "date", rep("numeric", 8)))
+tndoh_vax_age <- readxl::read_excel(here::here("data_tndoh/COVID_VACCINE_AGE_GROUPS.XLSX"),
+                                      col_types = c("text", "date", rep("numeric", 9)))
 names(tndoh_vax_age) <- tolower(names(tndoh_vax_age))
 tndoh_vax_age <-
   tndoh_vax_age %>%
-  filter(!grepl("pending", age_group, ignore.case = T )) %>%  
+  filter(!grepl("pending", age_group, ignore.case = T )) %>%
   mutate(date = lubridate::ymd(date),
-         age.f = factor(age_group,
-                        levels = c("0-10", "11-20", "16-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+"), # 16-20 needs to match other age category
-                        labels = c("0-10", "11-20", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+")))
-tndoh_age <-
-  left_join(tndoh_age, tndoh_vax_age,
-            by = c("date", "age.f")) %>%
+         age.f2 = factor(age_group,
+                        levels = c("<5", "5-11", "12-15", "16-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+"),
+                        labels = c("<5", "5-11", "12-15", "16-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+"))) 
+# tndoh_vax_age <-
+#   tndoh_vax_age %>%
+#   filter(!grepl("pending", age_group, ignore.case = T )) %>%  
+#   mutate(date = lubridate::ymd(date),
+#          age.f = factor(age_group,
+#                         levels = c("0-10", "11-20", "16-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+"), # 16-20 needs to match other age category
+#                         labels = c("0-10", "11-20", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81+")))
+tndoh_vax_age <-
+  left_join(tndoh_vax_age, tn_age_groups2,
+            by = "age.f2") %>%
   rowwise() %>%
-  mutate(ar_totalvax_pct = vaccine_count/populationtn_byage_2019*100,
-         ar_recipientvax_pct = recipient_count/populationtn_byage_2019*100) %>%
+  mutate(ar_totalvax_pct = vaccine_count/populationtn_byage_2019_B*100,
+         ar_recipientvax_pct = recipient_count/populationtn_byage_2019_B*100) %>%
   ungroup() 
 
 tndoh_age_last <- # FOR AGE PROPORTION PLOT
@@ -380,21 +394,21 @@ tndoh_age_last <- # FOR AGE PROPORTION PLOT
 
 # most recent vaccination by age
 vax_by_age_mostrecent <-
-  tndoh_age %>% 
+  tndoh_vax_age %>% 
   filter(!is.na(vaccine_count)) %>% 
   filter(date == max(date, na.rm = T)) %>% 
-    select(date, recipient_count, age.f, ar_recipientvax_pct) 
+    select(date, recipient_count, age.f2, ar_recipientvax_pct) 
 mostrecent_vax_agedate <- max(vax_by_age_mostrecent$date)  
 
 # Deaths by age table ####
 age_death_table <-
   tndoh_age %>%
   filter(date == max(date, na.rm = T)) %>% 
-  select(age.f,populationtn_byage_2019, ar_totalcases, ar_totaldeaths, ar_totaldeaths_100k) %>% 
+  select(date, age.f,populationtn_byage_2019, ar_totalcases, ar_totaldeaths, ar_totaldeaths_100k) %>% 
   mutate(#ar_totalcases = comma(ar_totalcases, 0),
     ar_totaldeaths_pct = sprintf("%1.2f%%", ar_totaldeaths_100k/1000),
-    ar_totaldeaths_100k = sprintf("%1.2f", ar_totaldeaths_100k)) %>% 
-  left_join(vax_by_age_mostrecent, by = "age.f")
+    ar_totaldeaths_100k = sprintf("%1.2f", ar_totaldeaths_100k)) #%>% 
+  # left_join(vax_by_age_mostrecent, by = "age.f")
 
 
 # COUNTY DATA ####
@@ -794,8 +808,6 @@ pl_age <-
   tndoh_age %>% 
   filter(date == max(date)) %>% 
   ggplot() +
-# pl_age <-
-#   pl_age +
   geom_blank(data = tndoh_age[tndoh_age$ar_totalcases == max(tndoh_age$ar_totalcases), ], 
              aes(x=age.f, y=ar_totalcases*1.1)) +
   geom_bar(aes(age.f, ar_totalcases), alpha = 0.5, fill = "steelblue", stat = "identity", ) +
@@ -905,13 +917,15 @@ age_death_table %>%
          ar_cfr = sprintf("%1.3f", ar_totaldeaths/ar_totalcases*100),
          ar_death_pct = sprintf("%1.0f%%", ar_totaldeaths/total_deaths*100),
          populationtn_byage_2019 = comma(populationtn_byage_2019),
-         ar_recipientvax_pct = sprintf("%1.1f%%", ar_recipientvax_pct)
+         # ar_recipientvax_pct = sprintf("%1.1f%%", ar_recipientvax_pct)
   ) %>% 
-  select(age.f, populationtn_byage_2019, ar_totalcases, ar_case_pct, ar_totaldeaths, ar_cfr, ar_death_pct, ar_totaldeaths_100k, ar_totaldeaths_pct, ar_recipientvax_pct) %>%
+  select(age.f, populationtn_byage_2019, ar_totalcases, ar_case_pct, ar_totaldeaths, ar_cfr, ar_death_pct, ar_totaldeaths_100k, ar_totaldeaths_pct, 
+         # ar_recipientvax_pct
+         ) %>%
   filter(!is.na(age.f)) %>% 
   htmlTable::htmlTable(total=F, align = "r", align.header = "r", rnames = F,
                        # caption = "Age Group Estimates",
-                       header = c("Age Group", "Population (n)", "Cases", "Cases</br>(% of Total)", "Deaths", "CFR%", "Deaths</br>(% of Total)", "Deaths/100k", "Deaths (% in Age)", "Given 1st Vaccine (% in Age)"),
+                       header = c("Age Group", "Population (n)", "Cases", "Cases</br>(% of Total)", "Deaths", "CFR%", "Deaths</br>(% of Total)", "Deaths/100k", "Deaths (% in Age)"), # "Given 1st Vaccine (% in Age)"),
                        tfoot = paste0("<i>Population within each age group taken from US Census estimates for TN, 2019</br>CFR=Case Fatality Rate (%)<br>Vaccination data last updated on ", mostrecent_vax_agedate, ".</i>"),
                        css.cell = rbind(rep("font-size: 1.1em; padding-left: .5em; padding-right: .5em;", times=ncol(.)),
                                         matrix("padding:0 5px 0 5px;", ncol=ncol(.), nrow=nrow(.))))
@@ -1355,6 +1369,8 @@ Age strata populations are taken from the US Census estimate for TN, year 2019 e
 #   # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
 #   theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
 
+
+
 pl_cases_age_peak <-
   tndoh_age %>% 
   filter(date >= lubridate::ymd("2020-10-01"), 
@@ -1397,10 +1413,10 @@ max_y <-
              layer_scales(pl_cases_age_peak)$y$range$range[[2]])
              
 
-cowplot::plot_grid(pl_cases_age_2021 + ylim(c(0, max_y)) +
-                       geom_text(data = age_death_table, size = 3, hjust = 0, vjust=1, fontface = "italic",
-                                 aes(x=lubridate::ymd("2021-06-01"), y = max_y, 
-                                     label = sprintf("Vacc.:%1.1f%%", ar_recipientvax_pct) )),
+cowplot::plot_grid(pl_cases_age_2021 + ylim(c(0, max_y)), #+
+                       # geom_text(data = age_death_table, size = 3, hjust = 0, vjust=1, fontface = "italic",
+                       #           aes(x=lubridate::ymd("2021-06-01"), y = max_y, 
+                       #               label = sprintf("Vacc.:%1.1f%%", ar_recipientvax_pct) )),
                    pl_cases_age_peak + ylim(c(0, max_y)),
                    nrow = 2)
 ```
@@ -1465,11 +1481,12 @@ pl_newcases_age_2021 <-
 y_labelpos <- max(layer_scales(pl_newcases_age_2021)$y$range$range[[2]])
 
 
+# note: age groups need to be adjusted to calculate Vax % again
 
-cowplot::plot_grid(pl_newcases_age_2021 + 
-                     geom_text(data = age_death_table, size = 3, hjust = 0, vjust=1, fontface = "italic",
-                               aes(x=lubridate::ymd("2021-06-01"), y = y_labelpos, 
-                                   label = sprintf("Vacc.:%1.1f%%", ar_recipientvax_pct) )),
+cowplot::plot_grid(pl_newcases_age_2021, # + 
+                     # geom_text(data = age_death_table, size = 3, hjust = 0, vjust=1, fontface = "italic",
+                     #           aes(x=lubridate::ymd("2021-06-01"), y = y_labelpos, 
+                     #               label = sprintf("Vacc.:%1.1f%%", ar_recipientvax_pct) )),
                    pl_newcases_schoolage,
                    nrow = 2)
 
