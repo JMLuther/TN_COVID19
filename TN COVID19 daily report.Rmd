@@ -126,12 +126,12 @@ theme_set(theme_bw() +
 
 For a reliable discussion of COVID-19, vaccines, and emerging variants, listen to [Dr. Aronoff's Medicine Grand Rounds](https://www.youtube.com/watch?v=Vh8p6OJuE4U&t=37s&ab_channel=VUMCDepartmentOfMedicine) from August 2021.
 
-If you are **12** years old or older, you are eligible to get your vaccine in Nashville (for free)- Go to one of these sites to sign up:
+If you *or your child* are **5** years old or older, you are eligible to get your vaccine in Nashville (for free)- Go to one of these sites to sign up:
 
   *  To review information and options at (or near) Vanderbilt see [this site](https://www.vumc.org/coronavirus/GetVaccines) (open to the general public, do not have to be a Vanderbilt patient)   
   *  [Metro Public health site](https://www.asafenashville.org/)  
   *  [Teamup calendar of community sites](https://teamup.com/ks48yq728y9por8a6q)  
-  *  [Vanderbilt Medical Center sign-up](https://covid-vaccine.app.vumc.org/schedule/#/availability) with sites in Nashville (12+), Shelbyville (18+), and Tullahoma (18+)  
+  *  [Vanderbilt Medical Center sign-up](https://covid-vaccine.app.vumc.org/schedule/#/availability) with sites in Nashville, Shelbyville, and Tullahoma  
 
 
 # **Disclaimer**
@@ -1157,7 +1157,8 @@ plot_top10_increase
 
 ## Counties at or near all-time peak  
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
+*currently disabled due to drop in cases*  
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 counties_near_peak_cases <-
   tndoh_countynew %>%   
   # ungroup() %>%  
@@ -1167,13 +1168,15 @@ counties_near_peak_cases <-
   group_by(county) %>% 
   filter(new_cases_county_trend_ratio == max(new_cases_county_trend_ratio)) %>% 
   ungroup()  
-```
 
-Counties at peak: `r length(counties_near_peak_cases$county)` of 95 TN counties are either at peak or within 90% of their maximum peak. Plots limited to the 10 with the highest 7-day New Case average.
+#____TEXT 
+# Counties at peak: `r length(counties_near_peak_cases$county)` of 95 TN counties are either at peak or within 90% of their maximum peak. Plots limited to the 10 with the highest 7-day New Case average.
+# 
+# *limited to the 10 with the largest number of cases on average*
+#____END TEXT 
 
-*limited to the 10 with the largest number of cases on average*
 
-```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+#```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 counties_near_peak_cases_top10 <-
   counties_near_peak_cases %>% 
   slice_max(order_by =  new_cases_county_trend, n= 10) %>% 
