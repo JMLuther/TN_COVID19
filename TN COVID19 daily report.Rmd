@@ -1210,18 +1210,8 @@ counties_near_peak_cases_top10 <-
 # 
 #    print("No counties currently at peak")
  # ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))
-        
-```
-`r ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))` counties are currently near all-time peak new case rate. 
 
-## Best 10: Largest Decrease in Cases
-
-Counties with the top 10 greatest weekly Decrease in New Cases, by % Change of 7-day average versus 7 days prior (limited to counties with average of \>5 daily cases).
-
-*Only counties with a decline in case averages are shown (may be \<10)*
-
-```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
-# MIDTN counties plot ####
+# FILTER CO WITH DECREASE
 counties_top10_decrease <-
   tndoh_countynew %>%
   ungroup() %>%
@@ -1230,30 +1220,42 @@ counties_top10_decrease <-
            new_cases_county_7davg >= 5,
          name %in% TN_counties$name) %>%  # exclude the pending and out-of-state
   top_n(n = -10, wt = new_cases_county_7davg_1wkdelta) %>%
-  pull(name)
+  pull(name)        
+```
+`r ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))` counties are currently near all-time peak new case rate. 
 
-pl_best10 <-
- tndoh_countynew %>%
-  filter(name %in% counties_top10_decrease) %>%
-  ggplot() +
-  geom_col(aes(date, new_cases), fill = "steelblue", alpha = 0.5) +
-  geom_col(aes(date, new_deaths), fill = "red") +
-  geom_line(aes(date, new_cases_county_7davg), color = "steelblue", size = 1) +
-  labs(x=NULL,
-       y="New Results by day",
-       fill = NULL,
-       alpha = NULL,
-       subtitle = "New Cases by Day: 10 Counties with the largest 1-week Decrease") +
-  ylim(0,NA) +
-  scale_x_date(date_breaks = "3 month", date_labels = "%b" ) +
-  theme(#axis.text.x =  element_text(angle = 90, hjust = 1),
-        legend.position = "none",
-        strip.text = element_text(size = 14)) +
-  facet_wrap(~name, nrow = 2,
-             scales = "free_y")
-pl_best10
+## Best 10: Largest Decrease in Cases
 
-# cat("There were no counties with a decreased 7d average")
+Counties with the top 10 greatest weekly Decrease in New Cases, by % Change of 7-day average versus 7 days prior (limited to counties with average of \>5 daily cases).
+
+*Only counties with a decline in case averages are shown (may be \<10).* Cases are currently declining in `r length(counties_top10_decrease)` counties
+
+```{r eval=FALSE, fig.height=6, fig.width=12, message=FALSE, warning=FALSE, include=FALSE}
+# MIDTN counties plot ####
+
+# 
+# pl_best10 <-
+#  tndoh_countynew %>%
+#   filter(name %in% counties_top10_decrease) %>%
+#   ggplot() +
+#   geom_col(aes(date, new_cases), fill = "steelblue", alpha = 0.5) +
+#   geom_col(aes(date, new_deaths), fill = "red") +
+#   geom_line(aes(date, new_cases_county_7davg), color = "steelblue", size = 1) +
+#   labs(x=NULL,
+#        y="New Results by day",
+#        fill = NULL,
+#        alpha = NULL,
+#        subtitle = "New Cases by Day: 10 Counties with the largest 1-week Decrease") +
+#   ylim(0,NA) +
+#   scale_x_date(date_breaks = "3 month", date_labels = "%b" ) +
+#   theme(#axis.text.x =  element_text(angle = 90, hjust = 1),
+#         legend.position = "none",
+#         strip.text = element_text(size = 14)) +
+#   facet_wrap(~name, nrow = 2,
+#              scales = "free_y")
+# pl_best10
+
+cat("There were no counties with a decreased 7d average")
 
 # ifelse(length(counties_top10_decrease) >= 1,
 #        # IF >=1 with negative trend
@@ -2081,10 +2083,10 @@ us_heatmap_100k
 
 ```
 
-**You made it to the end, so here's a random XKCD comic (please excuse any profanity- just randomly selected):**
+**You made it to the end, so here's a random [XKCD comic](https://xkcd.com/) (please excuse any profanity- just randomly selected):**
 
 <i> 
-```{r echo=FALSE, fig.width=8}
+```{r echo=FALSE, fig.width=8, message=FALSE, warning=FALSE}
 # PRIOR DAD JOKE VERSION
 #___________________________________
 # ```{r echo=FALSE, results='asis'}
@@ -2096,22 +2098,26 @@ xkcd.today <- jsonlite::parse_json(httr::GET(url = "https://xkcd.com/info.0.json
 # get a random XKCD comic instead of today's
 n <- sample(1:xkcd.today$num, 1)
 xkcd.rand =   jsonlite::parse_json(httr::GET(url = paste0("https://xkcd.com/", n,  "/info.0.json")))
-temp <- tempfile()
-download.file(url = xkcd.rand$img, temp, mode = "wb") # download the actual image
-grid.newpage()
-grid::grid.raster(png::readPNG(temp))
-g <- gridtext::textbox_grob(
-  paste(strwrap(xkcd.rand$alt), collapse = "<br>"),
-  x = unit(0, "npc"), y = unit(0, "npc"),
-  hjust = 0, vjust = 0, halign = 0.5,
-  gp = gpar(fontsize = 13),
-  box_gp = gpar(col = "grey", fill = "grey90"),
-  r = unit(5, "pt"),
-  padding = unit(c(2, 2, 2, 2), "pt"),
-  margin = unit(c(0, 2, 0, 2), "pt"))
-grid.draw(g)
+img_path <- here::here("code/xkcd.png")
+download.file(url = xkcd.rand$img, img_path, mode = "wb") # download the actual image
+# grid::grid.newpage()
+# grid::grid.raster(png::readPNG(temp))
+# g <- gridtext::textbox_grob(
+#   paste(strwrap(xkcd.rand$alt), collapse = "<br>"),
+#   x = unit(0, "npc"), y = unit(0, "npc"),
+#   hjust = 0, vjust = 0, halign = 0.5,
+#   gp = gpar(fontsize = 13),
+#   box_gp = gpar(col = "grey", fill = "grey90"),
+#   r = unit(5, "pt"),
+#   padding = unit(c(2, 2, 2, 2), "pt"),
+#   margin = unit(c(0, 2, 0, 2), "pt"))
+# grid.draw(g)
+knitr::include_graphics(img_path)
+
 ```
 </i>
+
+
 
 # Session Info
 
