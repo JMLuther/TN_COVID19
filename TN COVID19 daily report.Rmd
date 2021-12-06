@@ -2081,11 +2081,35 @@ us_heatmap_100k
 
 ```
 
-**You made it to the end, so here's a Dad joke:**
+**You made it to the end, so here's a random XKCD comic (please excuse any profanity- just randomly selected):**
 
 <i> 
-```{r echo=FALSE, results='asis'}
-dadjoke::dadjoke() 
+```{r echo=FALSE, fig.width=8}
+# PRIOR DAD JOKE VERSION
+#___________________________________
+# ```{r echo=FALSE, results='asis'}
+# dadjoke::dadjoke() 
+#___________________________________
+
+# get XKCD metadata for most recent comic
+xkcd.today <- jsonlite::parse_json(httr::GET(url = "https://xkcd.com/info.0.json"))
+# get a random XKCD comic instead of today's
+n <- sample(1:xkcd.today$num, 1)
+xkcd.rand =   jsonlite::parse_json(httr::GET(url = paste0("https://xkcd.com/", n,  "/info.0.json")))
+temp <- tempfile()
+download.file(url = xkcd.rand$img, temp, mode = "wb") # download the actual image
+grid.newpage()
+grid::grid.raster(png::readPNG(temp))
+g <- gridtext::textbox_grob(
+  paste(strwrap(xkcd.rand$alt), collapse = "<br>"),
+  x = unit(0, "npc"), y = unit(0, "npc"),
+  hjust = 0, vjust = 0, halign = 0.5,
+  gp = gpar(fontsize = 13),
+  box_gp = gpar(col = "grey", fill = "grey90"),
+  r = unit(5, "pt"),
+  padding = unit(c(2, 2, 2, 2), "pt"),
+  margin = unit(c(0, 2, 0, 2), "pt"))
+grid.draw(g)
 ```
 </i>
 
