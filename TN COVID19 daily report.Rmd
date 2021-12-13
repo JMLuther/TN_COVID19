@@ -1228,7 +1228,8 @@ counties_top10_decrease <-
 
 Counties with the top 10 greatest weekly Decrease in New Cases, by % Change of 7-day average versus 7 days prior (limited to counties with average of \>5 daily cases).
 
-*Only counties with a decline in case averages are shown (may be \<10).* Cases are currently declining in `r length(counties_top10_decrease)` counties
+*Only counties with a decline in case averages are shown (may be \<10).*  
+Cases are currently declining in `r length(counties_top10_decrease)` counties
 
 ```{r echo=TRUE, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 # MIDTN counties plot ####
