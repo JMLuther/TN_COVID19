@@ -1114,19 +1114,28 @@ cowplot::plot_grid(plot_state_trends,
 
 ## Top 10: Largest Increase in Cases
 
-Counties with the top 10 greatest weekly increase in New Cases, by % Change of 7-day average versus 7 days prior (limited to counties with average of \>5 daily cases).
-
-```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+```{r include=FALSE}
 # MIDTN counties plot ####
-counties_top10_increase <-
+counties_top10_increase_full <-
   tndoh_countynew %>%   
   ungroup() %>%  
   filter(date == max(date, na.rm = T),
        new_cases_county_7davg_1wkdelta > 0,
-         new_cases_county_7davg >= 5,
-         name %in% TN_counties$name) %>%  # exclude the pending and out-of-state
+         # new_cases_county_7davg >= 5,
+         name %in% TN_counties$name)   # exclude the pending and out-of-state
+counties_top10_increase_full_n <- length(counties_top10_increase_full)
+counties_top10_increase <-
+  counties_top10_increase_full %>% 
+  filter(new_cases_county_7davg_1wkdelta > 0) %>% 
   top_n(n = 10, wt = new_cases_county_7davg_1wkdelta) %>%  
   pull(name)
+```
+
+Counties with the top 10 greatest weekly increase in New Cases, by % Change of 7-day average versus 7 days prior (limited to counties with average of \>5 daily cases). Case rates are currently increasing in `r ifelse(counties_top10_increase_full_n == 0, "no", counties_top10_increase_full_n)` counties.
+
+
+```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+
 
 plot_top10_increase <-
   tndoh_countynew %>%  
@@ -1211,25 +1220,33 @@ counties_near_peak_cases_top10 <-
 #    print("No counties currently at peak")
  # ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))
 
+    
+```
+`r ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))` counties are currently near (at or within >90% of) all-time peak new case rate. 
+
+## Best 10: Largest Decrease in Cases
+
+```{r include=FALSE}
 # FILTER CO WITH DECREASE
-counties_top10_decrease <-
+counties_top10_decrease_full <-
   tndoh_countynew %>%
   ungroup() %>%
   filter(date == max(date, na.rm = T),
        new_cases_county_7davg_1wkdelta < 0,
-           new_cases_county_7davg >= 5,
-         name %in% TN_counties$name) %>%  # exclude the pending and out-of-state
+         name %in% TN_counties$name)   # exclude the pending and out-of-state
+counties_top10_decrease_n <- length(counties_top10_decrease_full)
+counties_top10_decrease <-
+  counties_top10_decrease_full %>% 
+  filter(new_cases_county_7davg >= 5) %>% 
   top_n(n = -10, wt = new_cases_county_7davg_1wkdelta) %>%
-  pull(name)        
+  pull(name)    
 ```
-`r ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))` counties are currently near all-time peak new case rate. 
 
-## Best 10: Largest Decrease in Cases
 
 Counties with the top 10 greatest weekly Decrease in New Cases, by % Change of 7-day average versus 7 days prior (limited to counties with average of \>5 daily cases).
 
 *Only counties with a decline in case averages are shown (may be \<10).*  
-Cases are currently declining in `r length(counties_top10_decrease)` counties
+Cases are currently declining in `r counties_top10_decrease_n` counties
 
 ```{r echo=TRUE, fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 # MIDTN counties plot ####
