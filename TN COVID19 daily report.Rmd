@@ -2109,6 +2109,8 @@ us_heatmap_100k
 
 ```
 
+# XKCD bonus  
+
 **You made it to the end, so here's a random [XKCD comic](https://xkcd.com/) (please excuse any profanity- just randomly selected):**
 
 <i> 
@@ -2138,7 +2140,7 @@ download.file(url = xkcd.rand$img, img_path, mode = "wb") # download the actual 
 #   padding = unit(c(2, 2, 2, 2), "pt"),
 #   margin = unit(c(0, 2, 0, 2), "pt"))
 # grid.draw(g)
-knitr::include_graphics(img_path)
+knitr::include_graphics(img_path, dpi = 100)
 
 ```
 </i>
