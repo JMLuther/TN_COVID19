@@ -1123,10 +1123,11 @@ counties_top10_increase_full <-
   tndoh_countynew %>%   
   ungroup() %>%  
   filter(date == max(date, na.rm = T),
-       new_cases_county_7davg_1wkdelta > 0,
+         new_cases_county_7davg_1wkdelta > 0,
          # new_cases_county_7davg >= 5,
+         !county %in% c("Pending", "Out of State"), 
          name %in% TN_counties$name)   # exclude the pending and out-of-state
-counties_top10_increase_full_n <- length(counties_top10_increase_full)
+counties_top10_increase_full_n <- length(counties_top10_increase_full$county)
 counties_top10_increase <-
   counties_top10_increase_full %>% 
   filter(new_cases_county_7davg_1wkdelta > 0) %>% 
@@ -1170,31 +1171,31 @@ plot_top10_increase
 
 ## Counties at or near all-time peak  
 
-*currently disabled due to drop in cases*  
+
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
+# *currently disabled due to drop in cases*  
 counties_near_peak_cases <-
   tndoh_countynew %>%   
   # ungroup() %>%  
   filter(new_cases_county_trend_ratio >= 0.9,
          date >= Sys.Date() - 7,
-         county != "Pending") %>% 
+         !county %in% c("Pending", "Out of State")) %>% 
   group_by(county) %>% 
   filter(new_cases_county_trend_ratio == max(new_cases_county_trend_ratio)) %>% 
   ungroup()  
 
-#____TEXT 
-# Counties at peak: `r length(counties_near_peak_cases$county)` of 95 TN counties are either at peak or within 90% of their maximum peak. Plots limited to the 10 with the highest 7-day New Case average.
-# 
-# *limited to the 10 with the largest number of cases on average*
-#____END TEXT 
-
-
-#```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 counties_near_peak_cases_top10 <-
   counties_near_peak_cases %>% 
   slice_max(order_by =  new_cases_county_trend, n= 10) %>% 
   pull(county) 
 
+```
+
+`r ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))` counties are currently near (at or within >90% of) all-time peak new case rate. 
+
+
+
+```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
 
 plot_counties_near_peak <-
   tndoh_countynew %>%
@@ -1220,13 +1221,12 @@ plot_counties_near_peak <-
   theme(strip.text = element_text(size = 14))
 
 plot_counties_near_peak
-# 
+  # 
 #    print("No counties currently at peak")
  # ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))
 
     
 ```
-`r ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))` counties are currently near (at or within >90% of) all-time peak new case rate. 
 
 ## Best 10: Largest Decrease in Cases
 
@@ -1238,7 +1238,7 @@ counties_top10_decrease_full <-
   filter(date == max(date, na.rm = T),
        new_cases_county_7davg_1wkdelta < 0,
          name %in% TN_counties$name)   # exclude the pending and out-of-state
-counties_top10_decrease_n <- length(counties_top10_decrease_full)
+counties_top10_decrease_n <- length(counties_top10_decrease_full$county)
 counties_top10_decrease <-
   counties_top10_decrease_full %>% 
   filter(new_cases_county_7davg >= 5) %>% 
