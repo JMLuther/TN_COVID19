@@ -1241,7 +1241,7 @@ counties_top10_decrease_full <-
 counties_top10_decrease_n <- length(counties_top10_decrease_full$county)
 counties_top10_decrease <-
   counties_top10_decrease_full %>% 
-  filter(new_cases_county_7davg >= 5) %>% 
+  # filter(new_cases_county_7davg >= 5) %>% 
   top_n(n = -10, wt = new_cases_county_7davg_1wkdelta) %>%
   pull(name)    
 ```
