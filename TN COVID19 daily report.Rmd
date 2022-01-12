@@ -229,6 +229,11 @@ tndoh_vax_state <-
 tndoh_daily$new_cases_ts <- ts(tndoh_daily$new_cases, frequency = 7, start = 1)
 tndoh_daily$new_cases_trend.stl <- stl(tndoh_daily$new_cases_ts, s.window = 7)$time.series[, "trend"]
 
+# add Deaths trend line calculated by STL (Seasonal and Trend decomposition using Loess) 
+tndoh_daily$new_deaths_ts <- ts(tndoh_daily$new_deaths_by_dod, frequency = 7, start = 1)
+tndoh_daily$new_deaths_trend.stl <- stl(tndoh_daily$new_deaths_ts, s.window = 7)$time.series[, "trend"]
+
+
 # create annotations
 tndoh_daily <-
   left_join(tndoh_daily, tndoh_vax_state,
@@ -241,7 +246,7 @@ tndoh_daily <-
          new_cases_100k = new_cases/TN_pop2019*100000,
          new_cases_7davg = RcppRoll::roll_meanr(new_cases, 7),
          new_cases_7davg_100k = new_cases_7davg/TN_pop2019*100000,
-         new_deaths_7davg = RcppRoll::roll_meanr(new_deaths, 7),
+         new_deaths_7davg = RcppRoll::roll_meanr(new_deaths_by_dod, 7),
          new_hosp_7davg = RcppRoll::roll_meanr(new_hosp, 7),
          new_tests_7davg = RcppRoll::roll_meanr(new_tests, 7),
          pos_pct_7davg = RcppRoll::roll_meanr(pos_tests_new, 7)/RcppRoll::roll_meanr(new_tests, 7),
@@ -262,35 +267,35 @@ tndoh_daily <-
                      comma(new_cases, digits = 0), 
                      comma(new_cases_100k, digits = 0), 
                      comma(new_hosp, 0), 
-                     comma(new_deaths, digits = 0), 
+                     comma(new_deaths_by_dod, digits = 0), 
                      pos_pct_today*100, 
                      comma(new_cases_7davg_100k, 1),
                      comma(new_cases_trend.stl/TN_pop2019*100000, 1),
                      comma(new_deaths_7davg, digits = 0), 
                      pos_pct_7davg*100, 
-                     total_deaths/total_cases*100,
+                     total_deaths_by_dod/total_cases*100,
                      comma(new_vaccine_count, 0),
                      recipient_count_pct) ) 
 
 
 tndoh_daily_limited <-
   tndoh_daily %>% 
-  select(date, total_cases, total_hosp, total_deaths) %>%  
-  pivot_longer(cols = c(total_cases, total_hosp, total_deaths),
+  select(date, total_cases, total_hosp, total_deaths_by_dod) %>%  
+  pivot_longer(cols = c(total_cases, total_hosp, total_deaths_by_dod),
                names_to = "measure",
                values_to = "count") %>%  
-  mutate(var.f = factor(measure, levels = c("total_cases", "total_hosp", "total_deaths"),
+  mutate(var.f = factor(measure, levels = c("total_cases", "total_hosp", "total_deaths_by_dod"),
                         labels = c("Cases", "Hospitalizations", "Deaths")))  
 title_tnsdc <- cowplot::ggdraw() + 
   cowplot::draw_label(paste0("COVID-19 in Tennessee (as of ", max(tndoh_daily$date), ")") , fontface='bold')
 
 tndoh_daily_long <-
   tndoh_daily %>%  
-  select(date, new_cases, new_deaths, new_hosp) %>%   
-  pivot_longer(cols = c(new_cases, new_deaths, new_hosp),
+  select(date, new_cases, new_deaths_by_dod, new_hosp) %>%   
+  pivot_longer(cols = c(new_cases, new_deaths_by_dod, new_hosp),
                names_to = "var", 
                values_to = "value") %>%  
-  mutate(var.f = factor(var, levels = c("new_cases", "new_deaths", "new_hosp"), 
+  mutate(var.f = factor(var, levels = c("new_cases", "new_deaths_by_dod", "new_hosp"), 
                         labels = c("Cases", "Hospitalizations", "Deaths")))
 
 label_pos_pct <-
@@ -740,7 +745,7 @@ tndoh_vax_county_current <-
 pl_new_tnsdc <-
   tndoh_daily %>% 
     filter(date >=  max(date) - 120) %>% 
-  pivot_longer(cols = c(new_cases, new_hosp, new_deaths),
+  pivot_longer(cols = c(new_cases, new_hosp, new_deaths_by_dod),
                names_to = "var", 
                values_to = "value") %>%  
   # filter(date > lubridate::ymd("2021-01-01")) %>% 
@@ -761,7 +766,7 @@ pl_new_tnsdc <-
                                "orange"),
                     labels = c(paste0("Cases: ", comma(tndoh_daily$new_cases[tndoh_daily$date == max(tndoh_daily$date)], digits = 0),
                                       " (", comma(tndoh_daily$total_cases[tndoh_daily$date == max(tndoh_daily$date)], digits = 0), ")"),
-                               paste0("Deaths: ", comma(tndoh_daily$new_deaths[tndoh_daily$date == max(tndoh_daily$date)], digits = 0),
+                               paste0("Deaths: ", comma(tndoh_daily$new_deaths_by_dod[tndoh_daily$date == max(tndoh_daily$date)], digits = 0),
                                       " (", comma(tndoh_daily$total_deaths[tndoh_daily$date == max(tndoh_daily$date)], digits = 0), ")"),
                                paste0("Hospitalizations: ", comma(tndoh_daily$new_hosp[tndoh_daily$date == max(tndoh_daily$date)], digits = 0),
                                       " (", comma(tndoh_daily$total_hosp[tndoh_daily$date == max(tndoh_daily$date)], digits = 0), ")")
@@ -785,6 +790,7 @@ ggiraph::girafe(ggobj = pl_new_tnsdc,
                   opts_tooltip(css = tooltip_css)
                 ) )
 ```
+*Deaths plotted by date-of-death. Reporting lags, so deaths within last 1-3 months may not be listed.*
 
 *Limited to Last 4 months for better detail. New case trend statistic and line estimated by Seasonal and Trend decomposition using Loess (STL) decomposition to account for daily variation- results are similar to a 7-day average but better account for the cyclical variation.*  
 
@@ -968,6 +974,7 @@ A bit of good news. Vaccination data is not updated every day- most recent data 
 
 TN now provides detail on number of recipients and number of vaccinations.
 
+
 ```{r echo=FALSE}
 vax_by_age_mostrecent %>% 
   select(age.f2, recipient_count, populationtn_byage_2019_B, ar_recipientvax_pct) %>%
@@ -982,8 +989,10 @@ vax_by_age_mostrecent %>%
 
 ```
 
+*most recent County Vaccination data update on `r max(tndoh_vax_county_current$date)`*
 
 ```{r echo=TRUE, fig.height=6, fig.width=10, message=FALSE, warning=FALSE}
+# max(tndoh_vax_county_current$date)
 plot_vacc <-
   tndoh_vax_county_current %>% 
   filter(date == latest_vax_date,
@@ -1042,39 +1051,78 @@ cowplot::plot_grid(plot_vacc, plot_immune,
 
 ## Rolling 7-Day Averages & Top 10 Most Cases
 
+
+**most recent County data update on `r max(tndoh_countynew$date)`**
+
 *note: The "New Hospitalizations" in this chart, as reported by the state, may not accurately reflect actual hospitalizations.* *Right y-axis is population adjusted (per 100k for TN). Ignore for "Test Positivity."*
 
 Counties in the top 10 highest new case rate over the past 7 days; 7-day average trend-line for daily new cases
 
 ```{r fig.width=12, fig.height=10, message=FALSE, warning=FALSE}
-variable.labs <- c( "Cases", "Hospitalizations", "Deaths", "Tests", "Test Positivity (%)", "Vaccinations")
-names(variable.labs) <- c( "new_cases", "new_hosp", "new_deaths", "new_tests", "pos_pct_today", "new_vaccine_count")
+# add PCT-Pos trend line calculated by STL (Seasonal and Trend decomposition using Loess) 
+tndoh_daily$pos_pct_today <- replace_na(tndoh_daily$pos_pct_today, 0)
+tndoh_daily$pos_pct_today_tl <- ts(tndoh_daily$pos_pct_today*100, frequency = 7, start = 1)
+tndoh_daily$pos_pct_today.stl <- stl(tndoh_daily$pos_pct_today_tl, s.window = 7)$time.series[, "trend"]
 
-plot_state_trends <- 
+# add Vaccine trend line calculated by STL (Seasonal and Trend decomposition using Loess) 
+tndoh_daily$new_vaccine_count <- replace_na(tndoh_daily$new_vaccine_count, 0)
+tndoh_daily$new_vaccine_count_tl <- ts(tndoh_daily$new_vaccine_count, frequency = 7, start = 1)
+tndoh_daily$new_vaccine_count.stl <- stl(tndoh_daily$new_vaccine_count_tl, s.window = 7)$time.series[, "trend"]
+
+variable.labs <- c( "Cases", "Cases", 
+                    "Hospitalizations", 
+                    "Deaths", "Deaths", "Deaths", 
+                    "Tests", "Test Positivity (%)", "Test Positivity (%)", 
+                    "Vaccinations", "Vaccinations")
+names(variable.labs) <- c( "new_cases_trend.stl", "new_cases_trend.stl", 
+                           "new_hosp", 
+                           "new_deaths","new_deaths_by_dod", "new_deaths_trend.stl", 
+                           "new_tests", "pos_pct_today", "pos_pct_today.stl",
+                           "new_vaccine_count", "new_vaccine_count.stl")
+
+plot_state_trends <-
   tndoh_daily %>%  
   mutate(pos_pct_today = pos_pct_today*100) %>%  
-  # select(date, new_cases_7davg)
-  # select(date, new_cases, new_deaths, new_tests, pos_pct_today) %>%  
-  select(date, new_cases, new_deaths, pos_pct_today, new_vaccine_count) %>% 
-  # select(date, new_cases, new_hosp, new_deaths, new_tests, pos_pct_today, new_vaccine_count) %>% 
+  select(date, new_cases_trend.stl, new_deaths_trend.stl, pos_pct_today.stl, new_vaccine_count.stl) %>% 
   pivot_longer(cols = -date,
                names_to = "variable",
                values_to = "value") %>%  
   group_by(variable) %>%  
   arrange(date) %>%  
-  mutate(value_7davg = RcppRoll::roll_meanr(value, 7)) %>%  
   ggplot() +
-# plot_state_trends <- 
-#   plot_state_trends +
-  geom_line(aes(date, value), size = 0.6, color = "grey") +
-  geom_line(aes(date, value_7davg), size = 1, color = "red") +
-  # scale_y_continuous(sec.axis = sec_axis( trans=~./TN_pop2019*10^5, name="per 100k Population")) +
+  geom_line(aes(date, value), size = 1, color = "red") +
   labs(x=NULL,
-       y="Rolling 7-day Average",
+       y="Decomposition 7-day Average",
        title = "TN State Trends") +
   facet_wrap(~variable, scales = "free_y", nrow = 1,
              labeller = labeller(variable = variable.labs)) +
   theme(strip.text = element_text(size = 14))
+  
+# plot_state_trends <- 
+#   tndoh_daily %>%  
+#   mutate(pos_pct_today = pos_pct_today*100) %>%  
+#   # select(date, new_cases_7davg)
+#   # select(date, new_cases, new_deaths_by_dod, new_tests, pos_pct_today) %>%  
+#   select(date, new_cases_trend.stl, new_deaths_by_dod, pos_pct_today, new_vaccine_count) %>% 
+#   # select(date, new_cases, new_hosp, new_deaths_by_dod, new_tests, pos_pct_today, new_vaccine_count) %>% 
+#   pivot_longer(cols = -date,
+#                names_to = "variable",
+#                values_to = "value") %>%  
+#   group_by(variable) %>%  
+#   arrange(date) %>%  
+#   mutate(value_7davg = RcppRoll::roll_meanr(value, 7)) %>%  
+#   ggplot() +
+# # plot_state_trends <- 
+# #   plot_state_trends +
+#   geom_line(aes(date, value), size = 0.6, color = "grey") +
+#   geom_line(aes(date, value_7davg), size = 1, color = "red") +
+#   # scale_y_continuous(sec.axis = sec_axis( trans=~./TN_pop2019*10^5, name="per 100k Population")) +
+#   labs(x=NULL,
+#        y="Rolling 7-day Average",
+#        title = "TN State Trends") +
+#   facet_wrap(~variable, scales = "free_y", nrow = 1,
+#              labeller = labeller(variable = variable.labs)) +
+#   theme(strip.text = element_text(size = 14))
 
 
 # MIDTN counties plot ####
@@ -1115,6 +1163,7 @@ cowplot::plot_grid(plot_state_trends,
                    plot_top10_counties,
                    nrow = 2, rel_heights = c(1.25,2))
 ```
+*deaths plotted by actual date-of-death. reporting typically lags several weeks, so most recent dates will not be fully reported.*
 
 ## Top 10: Largest Increase in Cases
 
@@ -1172,17 +1221,19 @@ plot_top10_increase
 
 ## Counties at or near all-time peak  
 
+*no data- County data not updated within the past 7 days*
+Instead- results represent counties near peak within the past 2 weeks.
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # *currently disabled due to drop in cases*  
 counties_near_peak_cases <-
   tndoh_countynew %>%   
-  # ungroup() %>%  
+  ungroup() %>%
   filter(new_cases_county_trend_ratio >= 0.9,
-         date >= Sys.Date() - 7,
+          date >= Sys.Date() - 14,
          !county %in% c("Pending", "Out of State")) %>% 
-  group_by(county) %>% 
-  filter(new_cases_county_trend_ratio == max(new_cases_county_trend_ratio)) %>% 
+  group_by(county) %>%
+  filter(new_cases_county_trend_ratio == max(new_cases_county_trend_ratio)) %>%
   ungroup()  
 
 counties_near_peak_cases_top10 <-
@@ -1194,6 +1245,7 @@ counties_near_peak_cases_top10 <-
 
 `r ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))` counties are currently near (at or within >90% of) all-time peak new case rate. 
 
+*no data- County data not updated within the past 7 days*
 
 
 ```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
@@ -1410,7 +1462,7 @@ leaflet() %>%
 Age strata populations are taken from the US Census estimate for TN, year 2019 estimate (the most recent available)
 
 
-```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
+```{r fig.height=9, fig.width=8, message=FALSE, warning=FALSE}
 # 2020 vs 2021 ####
 # pl_cases_age_2020 <-
 #   tndoh_age %>% 
@@ -1478,17 +1530,6 @@ max_y <-
              layer_scales(pl_cases_age_peak)$y$range$range[[2]])
              
 
-cowplot::plot_grid(pl_cases_age_2021 + ylim(c(0, max_y)) +
-                       geom_text(data = age_death_table, size = 3, hjust = 0, vjust=1, fontface = "italic",
-                                 aes(x=lubridate::ymd("2021-06-01"), y = max_y,
-                                     label = sprintf("Vacc.:%1.1f%%", ar_recipientvax_pct) )),
-                   pl_cases_age_peak + ylim(c(0, max_y)),
-                   nrow = 2)
-```
-
-### School Age trends  
-
-```{r fig.height=6, fig.width=8, message=FALSE, warning=FALSE}
 tndoh_schoolage <-
   tndoh_age %>% 
   select(date, age.f, ar_newcases) %>% 
@@ -1499,9 +1540,6 @@ tndoh_schoolage <-
 # CASE TREND- STL DECOMPOSITION
 tndoh_schoolage$ar_newcases_20_ts <- ts(tndoh_schoolage$ar_newcases_20, frequency = 7, start = 1)
 tndoh_schoolage$new_cases_trend.stl <-stl(tndoh_schoolage$ar_newcases_20_ts, s.window = 7)$time.series[, "trend"]
-
-# stl(tndoh_schoolage$ar_newcases_20_ts, s.window = 7) %>% plot()
-
 
 
 pl_newcases_schoolage <- 
@@ -1515,13 +1553,48 @@ pl_newcases_schoolage <-
   scale_y_continuous(expand = c(0, 0)) +
   theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
 
+
+cowplot::plot_grid(pl_cases_age_2021 + ylim(c(0, max_y)) +
+                       geom_text(data = age_death_table, size = 3, hjust = 0, vjust=1, fontface = "italic",
+                                 aes(x=lubridate::ymd("2021-06-01"), y = max_y,
+                                     label = sprintf("Vacc.:%1.1f%%", ar_recipientvax_pct) )),
+                   pl_cases_age_peak + ylim(c(0, max_y)),
+                   pl_newcases_schoolage,
+                   nrow = 3)
+```
+
+```{r eval=FALSE, fig.height=6, fig.width=8, message=FALSE, warning=FALSE, include=FALSE}
+# tndoh_schoolage <-
+#   tndoh_age %>% 
+#   select(date, age.f, ar_newcases) %>% 
+#   filter(age.f %in% c("0-10", "11-20")) %>% 
+#   group_by(date) %>% 
+#   summarise(ar_newcases_20 = sum(ar_newcases, na.rm = T)) 
+# 
+# # CASE TREND- STL DECOMPOSITION
+# tndoh_schoolage$ar_newcases_20_ts <- ts(tndoh_schoolage$ar_newcases_20, frequency = 7, start = 1)
+# tndoh_schoolage$new_cases_trend.stl <-stl(tndoh_schoolage$ar_newcases_20_ts, s.window = 7)$time.series[, "trend"]
+# 
+# 
+# pl_newcases_schoolage <- 
+#   tndoh_schoolage %>% 
+#   ggplot(aes(x=date)) + 
+#   geom_area(aes(y= ar_newcases_20), fill = "steelblue", alpha = 0.4) +
+#   geom_line(aes(y=new_cases_trend.stl), color="red", size=1) +
+#   labs(x = NULL, y = NULL,
+#        title = "Daily New Cases in age groups 0-20") +
+#   scale_x_date(date_breaks = "1 month", date_labels = "%b-%Y", expand = c(0, 0)) +
+#   scale_y_continuous(expand = c(0, 0)) +
+#   theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
+
 tndoh_age_trends <-
   tndoh_age %>% 
   ungroup() %>% 
   select(date, age.f, ar_newcases) %>% 
   group_by(age.f) %>% 
   nest(data = c(date, ar_newcases)) %>% 
-  mutate(data = map(data, ~mutate(.x, ar_newcases_ts = ts(ar_newcases, frequency = 7, start = 1),
+  mutate(data = map(data, ~mutate(.x, 
+                                  ar_newcases_ts = ts(ar_newcases, frequency = 7, start = 1),
                                   ar_newcases_trend.stl = stl(ar_newcases_ts, s.window = 7)$time.series[, "trend"])
          )) %>% 
   unnest(cols = c(data))
