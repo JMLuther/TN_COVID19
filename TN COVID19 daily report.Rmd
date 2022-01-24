@@ -123,6 +123,8 @@ theme_set(theme_bw() +
 
 *Last Data Update: `r file.info(here::here("data_tndoh/Public-Dataset-County-New.xlsx"))$mtime`*. All source documents for this report can be found on [github](https://github.com/JMLuther/TN_COVID19)
 
+The TN State DOH releases data weekly each Wed. ~4PM, so this document does not update daily. The CDC releases data each weekday on their [site](https://covid.cdc.gov/covid-data-tracker/#cases_casesper100klast7days).
+
 # **VACCINE SIGN-UP**  
 
 For a reliable discussion of COVID-19, vaccines, and emerging variants, listen to [Dr. Aronoff's Medicine Grand Rounds](https://www.youtube.com/watch?v=Vh8p6OJuE4U&t=37s&ab_channel=VUMCDepartmentOfMedicine) from August 2021.
