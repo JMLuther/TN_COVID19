@@ -1812,7 +1812,7 @@ pl_tnmap_7dDelta <-
   geom_sf(aes(geometry = geometry,
               fill = new_cases_county_7davg_1wkdelta*100),
           inherit.aes = F) +
-  scale_fill_gradient2(low = "green", mid = "white", high = "red") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red") +
   geom_sf_text(aes(label=sprintf("%1.1f",new_cases_county_7davg_1wkdelta*100), geometry = geometry),
                # color = cut(new_cases_county_7davg_1wkdelta, 2)),
                size = 3) +
