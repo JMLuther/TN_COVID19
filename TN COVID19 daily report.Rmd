@@ -1247,10 +1247,8 @@ counties_near_peak_cases_top10 <-
 
 `r ifelse(length(counties_near_peak_cases_top10) == 0, "No", length(counties_near_peak_cases_top10))` counties are currently near (at or within >90% of) all-time peak new case rate. 
 
-*no data- County data not updated within the past 7 days*
 
-
-```{r fig.height=6, fig.width=12, message=FALSE, warning=FALSE}
+```{r eval=FALSE, fig.height=6, fig.width=12, message=FALSE, warning=FALSE, include=FALSE}
 
 plot_counties_near_peak <-
   tndoh_countynew %>%
