@@ -443,7 +443,7 @@ TN_counties <- readRDS(here::here("data_rds/TN_counties.rds")) # see below for s
 tndoh_county_coln <-   length(names(readxl::read_excel(here::here("data_tndoh/Public-Dataset-County-New.xlsx"), n_max = 2)))
 
 tndoh_countynew <-  readxl::read_excel(here::here("data_tndoh/Public-Dataset-County-New.xlsx"),
-                                       col_types = c("date", "text", rep("numeric", tndoh_county_coln-2))) 
+                                       col_types = c("text","date", rep("numeric", tndoh_county_coln-2))) 
 
 names(tndoh_countynew) <-  tolower(names(tndoh_countynew))
 
@@ -1024,30 +1024,31 @@ plot_vacc <-
   theme_void() +
   theme(legend.position = "left") 
 
-plot_immune <- 
-  tndoh_vax_county_current %>% 
-  filter(date == latest_vax_date,
-         !is.na(statefp)) %>% 
-  ggplot() +
-  geom_sf(data = TN_counties) +
-  geom_sf(aes(geometry = geometry,
-              fill = immune_pct),
-          color = "grey30",
-          inherit.aes = F) +
-  geom_sf_text(aes(label=sprintf("%0.1f%%", immune_pct), 
-                   # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths, pct_pos), 
-                   geometry = geometry, 
-                   color = cut(immune_pct, 2)), 
-               size = 3) + 
-  viridis::scale_fill_viridis(option = "C", direction = 1) +
-  scale_color_manual(values = c("white", "black"), guide = F) +
-  labs(fill = "%Pop.:",
-       title = "Vaccination + Documented Prior Infection") +
-  theme_void() +
-  theme(legend.position = "left") 
+# plot_immune <- 
+  # tndoh_vax_county_current %>% 
+  # filter(date == latest_vax_date,
+  #        !is.na(statefp)) %>% 
+  # ggplot() +
+  # geom_sf(data = TN_counties) +
+  # geom_sf(aes(geometry = geometry,
+  #             fill = immune_pct),
+  #         color = "grey30",
+  #         inherit.aes = F) +
+  # geom_sf_text(aes(label=sprintf("%0.1f%%", immune_pct), 
+  #                  # geom_sf_text(aes(label=sprintf("%0.0f\n%0.0f%%", total_deaths, pct_pos), 
+  #                  geometry = geometry, 
+  #                  color = cut(immune_pct, 2)), 
+  #              size = 3) + 
+  # viridis::scale_fill_viridis(option = "C", direction = 1) +
+  # scale_color_manual(values = c("white", "black"), guide = F) +
+  # labs(fill = "%Pop.:",
+  #      title = "Vaccination + Documented Prior Infection") +
+  # theme_void() +
+  # theme(legend.position = "left") 
 
-cowplot::plot_grid(plot_vacc, plot_immune,
-                   nrow = 2)
+plot_vacc
+# cowplot::plot_grid(plot_vacc, plot_immune,
+#                    nrow = 2)
 
 ```
 
@@ -1136,7 +1137,7 @@ counties_top10 <-
   top_n(10, wt = new_cases_county_7davg) %>%  
   pull(name)
 
-plot_top10_counties <- 
+plot_top10_counties <-
   tndoh_countynew %>%  
   filter(name %in% counties_top10) %>% 
   ggplot() +
