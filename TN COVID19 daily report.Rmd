@@ -82,7 +82,7 @@ theme_set(theme_bw() +
 #               mode = 'wb',
 #               destfile = here::here("data_tndoh/Public-Dataset-Age.xlsx"))
 # # tools::md5sum(here::here("data_tndoh/Public-Dataset-Age.xlsx"))
-# bxq42@med.miami.edu
+
 # # COUNTY
 # download.file(url = #"https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-County-New.xlsx",
 #                 "https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-County-New.XLSX",
@@ -1224,8 +1224,8 @@ plot_top10_increase
 
 ## Counties at or near all-time peak  
 
-*no data- County data not updated within the past 7 days*
-Instead- results represent counties near peak within the past 2 weeks.
+
+
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
 # *currently disabled due to drop in cases*  
