@@ -36,8 +36,10 @@ library(leafpop)
 library(formattable)
 library(ggiraph)
 library(urbnmapr) # change to include AK/HI on map
-
-# library(covdata)
+library(cowplot); library(RcppRoll); library(htmlTable)
+library(ggtext)
+library(patchwork)
+library(Hmisc)
 
 # Default ggplot theme
 theme_set(theme_bw() +
