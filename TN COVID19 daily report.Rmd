@@ -127,14 +127,15 @@ theme_set(theme_bw() +
 
 *Last Data Update: `r file.info(here::here("data_tndoh/Public-Dataset-County-New.xlsx"))$mtime`*. All source documents for this report can be found on [github](https://github.com/JMLuther/TN_COVID19)
 
-The TN State DOH releases data weekly each Wed. ~4PM, so this document does not update daily. The CDC releases data each weekday on their [site](https://covid.cdc.gov/covid-data-tracker/#cases_casesper100klast7days).
+This document updates ~weekly each Wednesday after the TN State DOH releases data (usually Wednesday at ~4PM). The CDC releases data each weekday on their [site](https://covid.cdc.gov/covid-data-tracker/#cases_casesper100klast7days).
 
 # **VACCINE SIGN-UP**  
 
 For a reliable discussion of COVID-19, vaccines, and emerging variants, listen to [Dr. Aronoff's Medicine Grand Rounds](https://www.youtube.com/watch?v=Vh8p6OJuE4U&t=37s&ab_channel=VUMCDepartmentOfMedicine) from August 2021.
 
-If you *or your child* are **5** years old or older, you are eligible to get your vaccine in Nashville (for free)- Go to one of these sites to sign up:
+**All ages over 6 months are now eligible** for COVID vaccination- Go to one of these sites to sign up:
 
+  *  For ages 6mos to 5 years vaccine is available at VUMC Children's Hospital. [Go here to sign up](https://myhealthatvanderbilt.com/openscheduling/standalone?dept=101000419&vt=1400621221&stringkey=PedCovidVaccine) or call 615-936-5437 to schedule.  
   *  To review information and options at (or near) Vanderbilt see [this site](https://www.vumc.org/coronavirus/GetVaccines) (open to the general public, do not have to be a Vanderbilt patient)   
   *  [Metro Public health site](https://www.asafenashville.org/)  
   *  [Teamup calendar of community sites](https://teamup.com/ks48yq728y9por8a6q)  
