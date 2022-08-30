@@ -1525,7 +1525,7 @@ pl_cases_age_2021 <-
   theme(legend.position = "none") +
   labs(x = NULL, y = NULL,
        title = "Current: Average Daily Cases by Age Group (per 100k)") +
-  scale_x_date(date_breaks = "2 months", date_labels = "%b-%Y", expand = c(0, 0)) +
+  scale_x_date(date_breaks = "4 months", date_labels = "%b-%Y", expand = c(0, 0)) +
   facet_wrap(~age.f, nrow = 1) +
   # facet_wrap(~age.f, nrow = 1, scales = "free_y") +
   theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
@@ -1545,7 +1545,7 @@ tndoh_schoolage <-
 
 # CASE TREND- STL DECOMPOSITION
 tndoh_schoolage$ar_newcases_20_ts <- ts(tndoh_schoolage$ar_newcases_20, frequency = 7, start = 1)
-tndoh_schoolage$new_cases_trend.stl <-stl(tndoh_schoolage$ar_newcases_20_ts, s.window = 7)$time.series[, "trend"]
+tndoh_schoolage$new_cases_trend.stl <- stl(tndoh_schoolage$ar_newcases_20_ts, s.window = 7)$time.series[, "trend"]
 
 
 pl_newcases_schoolage <- 
@@ -1555,7 +1555,7 @@ pl_newcases_schoolage <-
   geom_line(aes(y=new_cases_trend.stl), color="red", size=1) +
   labs(x = NULL, y = NULL,
        title = "Daily New Cases in age groups 0-20") +
-  scale_x_date(date_breaks = "1 month", date_labels = "%b-%Y", expand = c(0, 0)) +
+  scale_x_date(date_breaks = "2 month", date_labels = "%b-%Y", expand = c(0, 0)) +
   scale_y_continuous(expand = c(0, 0)) +
   theme(axis.text.x.bottom = element_text(angle = 90, size = 7))
 
