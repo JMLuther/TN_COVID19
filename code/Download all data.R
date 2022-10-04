@@ -54,3 +54,4 @@ download.file(url = "https://www.tn.gov/content/dam/tn/health/documents/cedep/no
 download.file(url = "https://data.cdc.gov/api/views/9mfq-cb36/rows.csv?accessType=DOWNLOAD",
               destfile = here::here("data_cdc/cdc_state_info.csv"))
               
+nwss_dat <- RSocrata::read.socrata(url = "https://data.cdc.gov/resource/g653-rqe2.csv")

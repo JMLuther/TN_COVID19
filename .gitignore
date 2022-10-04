@@ -15,6 +15,7 @@ GA_script.html
 # TNDOH AND covidtracking data:
 data_tndoh/*
 data_covidtracking/*
+data_cdc/*
 
 # Output files from R CMD build
 /*.tar.gz
