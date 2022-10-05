@@ -42,6 +42,8 @@ library(htmlTable)
 library(ggtext)
 library(patchwork)
 library(Hmisc)
+library(httr)
+library(rvest)
 
 # Default ggplot theme
 theme_set(theme_bw() +
@@ -743,6 +745,7 @@ tndoh_vax_county_current <-
 
 # CDC WASTEWATER DATA (added Oct 4, 2022) ----
 nwss_dat <- RSocrata::read.socrata(url = "https://data.cdc.gov/resource/g653-rqe2.csv")
+# nwss_dat <- content(httr::GET("https://data.cdc.gov/resource/g653-rqe2.csv")) # get data
 wwtp_id_details_tn <- readRDS(here::here("data_rds/wwtp_id_details_tn.rds"))
 
 nwss_dat <-
@@ -759,6 +762,29 @@ nwss_dat_tn <-
   nwss_dat %>% 
   filter(state == "tn") %>%
   left_join(wwtp_id_details_tn,  by = "wwtp_id")
+
+# CDC VARIANT DATA
+## ├ Get Data ----
+# cdc_variants <- content(httr::GET("https://data.cdc.gov/resource/jr58-6ysp.csv")) # Full US data
+cdc_variants_data <- content(httr::GET("https://data.cdc.gov/resource/jr58-6ysp.csv?usa_or_hhsregion=4")) # Just Southeast
+
+# cdc_variants$usa_or_hhsregion <- factor(cdc_variants$usa_or_hhsregion, 
+#                                         levels = c("USA", 1:10),
+#                                         labels = c("USA", paste("Region", 1:10)))
+cdc_variants_data$variant <- factor(cdc_variants_data$variant)
+cdc_variants_data$week_ending <- lubridate::date(cdc_variants_data$week_ending)
+cdc_variants_data$creation_date <- lubridate::date(cdc_variants_data$creation_date)
+
+cdc_variants <- 
+  cdc_variants_data %>% 
+  filter(modeltype == "weighted") %>% 
+  arrange(creation_date) %>% 
+  filter(!duplicated(interaction(week_ending, variant))) 
+## ├ Join new data with variants ----
+cdc_variant_table <- readRDS(here::here("data_rds/cdc_variant_table.rds"))  
+cdc_variants_tt <- 
+  left_join(cdc_variants, cdc_variant_table, by = c("variant" = "pango.lineage"))  
+
 
 ```
 
@@ -1209,6 +1235,31 @@ nwss_dat_tn %>%
   theme(strip.text = element_text(size = 14),
         axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(legend.position = "none")
+
+```
+
+## Variants 
+
+The Variant distribution is reported by 10 US Regions. Only data for Region 4 (SouthEast) is shown here.
+
+```{r interactive_variants_plot, fig.height=4, fig.width=7, message=FALSE, warning=FALSE}
+## ├ Interactive Plot ----
+pl_variants <-
+  cdc_variants_tt %>%
+  ggplot(aes(week_ending, share,
+             group = variant,
+             fill = variant)) +
+  ggiraph::geom_area_interactive(color = "grey50", alpha = 0.6, aes(tooltip = tt), hover_css = "stroke:red;stroke-width:inherit;") +
+  scale_y_continuous(expand = c(0,0), limits = c(0,NA)) +
+  # scale_x_date(expand = c(0,0), date_breaks = "3 month", date_labels = "%b-%Y" ) +
+  theme(legend.position = "none") +
+  labs(x = NULL,
+       y = "Proportion of cases by Variant",
+       title = "Variant Distribution in Southeastern US (CDC Region 4)",
+       fill = "Variant:") 
+
+
+ggiraph(code = {print(pl_variants)}, zoom_max = 1, width = .8, width_svg = 7, height_svg = 4)
 
 ```
 
