@@ -88,7 +88,9 @@ theme_set(theme_bw() +
 
 *Last Data Update: `r file.info(here::here("data_tndoh/Public-Dataset-County-New.xlsx"))$mtime`*. All source documents for this report can be found on [github](https://github.com/JMLuther/TN_COVID19)
 
-This document updates ~weekly each Wednesday after the TN State DOH releases data (usually Wednesday at ~4PM). The CDC releases data each weekday on their [site](https://covid.cdc.gov/covid-data-tracker/#cases_casesper100klast7days).
+This document updates weekly each Wednesday after the TN State DOH releases data (usually Wednesday at ~4PM). The CDC releases data each weekday on their [site](https://covid.cdc.gov/covid-data-tracker/#cases_casesper100klast7days).
+
+For official, weekly TN State Dept of Health Updates, go to the [Critical Indicator Report](https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/CriticalIndicatorReport.pdf).
 
 # **VACCINE SIGN-UP**  
 
