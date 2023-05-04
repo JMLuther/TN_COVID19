@@ -69,6 +69,7 @@ theme_set(theme_bw() +
 {  filename <- here::here("data_tndoh/Public-Dataset-Age.xlsx")
   oldchecksum <- tools::md5sum(filename)
   download.file(url = #"https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-Age.xlsx",
+                  # "https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-Age.XLSX",
                   "https://www.tn.gov/content/dam/tn/health/documents/cedep/novel-coronavirus/datasets/Public-Dataset-Age.XLSX",
                 mode = 'wb',
                 destfile = here::here("data_tndoh/Public-Dataset-Age.xlsx"))
