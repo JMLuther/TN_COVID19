@@ -51,11 +51,14 @@ download.file(url = "https://www.tn.gov/content/dam/tn/health/documents/cedep/no
 
 
 # US DATA FROM THE COVIDTRACKING PROJECT ####
-download.file(url = "https://data.cdc.gov/api/views/9mfq-cb36/rows.csv?accessType=DOWNLOAD",
-              destfile = here::here("data_cdc/cdc_state_info.csv"))
+# download.file(url = "https://data.cdc.gov/api/views/9mfq-cb36/rows.csv?accessType=DOWNLOAD",
+# download.file(url = "https://data.cdc.gov/resource/vbim-akqf.csv",
+#               destfile = here::here("data_cdc/cdc_state_info.csv"))
+
+
 
 # CDC Variant data
-download.file("https://data.cdc.gov/api/views/jr58-6ysp/rows.csv?accessType=DOWNLOAD", 
+download.file("https://data.cdc.gov/api/views/jr58-6ysp/rows.csv?accessType=DOWNLOAD",
               destfile = here::here("data_cdc/cdc_variant_nowcast.csv")) # contains NOW-CAST results- all US regions
 
 # nwss_dat <- RSocrata::read.socrata(url = "https://data.cdc.gov/resource/g653-rqe2.csv")

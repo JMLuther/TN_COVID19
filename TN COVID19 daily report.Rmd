@@ -602,65 +602,69 @@ tndoh_demographics <-
 # NOTE: COVIDTRACKING PROJECT QUIT TRACKING DATA ON MARCH 7, 2021; 
 # TEST POSITIVITY RATES NOT AVAILABLE THERE
 # CDC DATA
-cdc_currentdata <- readr::read_csv(here::here("data_cdc/cdc_state_info.csv"))
-names(state.name) <- state.abb
-cdc_currentdata <-
-  cdc_currentdata %>% 
-  filter(state %in% state.abb) %>% 
-         # !state %in% c("AK", "HI") ) %>% 
-  mutate(date = lubridate::mdy(submission_date),
-         region = state.name[state])
+
+# cdc data download not available or moved and I can't find it 7/2023
+# cdc_currentdata <- readr::read_csv(here::here("data_cdc/cdc_state_info.csv"))
+# names(state.name) <- state.abb
+# cdc_currentdata <-
+#   cdc_currentdata %>% 
+#   filter(state %in% state.abb) %>% 
+#          # !state %in% c("AK", "HI") ) %>% 
+#   mutate(date = lubridate::mdy(submission_date),
+#          region = state.name[state])
+# 
+# 
+# cdc_currentdata <-
+#   cdc_currentdata %>%  
+#   # left_join(us_data,
+#   #           by = c("state" = "stusps")) %>%  
+#   left_join(state_pop_2019, by = "region") 
+# 
+# 
+# cdc_currentdata <-
+#   cdc_currentdata %>% 
+#   group_by(state) %>%  
+#   arrange(date) %>%  
+#   mutate(case_density_pct = tot_cases/pop_estimate*100,
+#          new_cases_state_7davg = round(RcppRoll::roll_meanr(new_case, 7), 1),
+#          new_deaths_state_7davg = round(RcppRoll::roll_meanr(new_death, 7), 1),
+#          new_deaths_state_7davg_100k = new_deaths_state_7davg/pop_estimate*100000,
+#          new_cases_state_7davg_100k = new_cases_state_7davg/pop_estimate*100000
+#   ) %>%  
+#   ungroup()
+# 
+# cdc_currentdata <-
+#   cdc_currentdata %>% 
+#   group_by(date) %>%  
+#   mutate(rank_newcases7davg = rank(-new_cases_state_7davg_100k)) %>%  
+#   ungroup()
+# 
+# 
+# 
+# state_tbl <-
+#   tibble(state_name = state.name,
+#          state = state.abb)
+# 
+# 
+# cdc_currentdata_2163 <-
+#   cdc_currentdata %>%  
+#   filter(date == max(date)) %>% 
+#   left_join(us_data, by = c("state" = "stusps"))  %>% 
+#   mutate(geometry = st_transform(geometry, 2163)) %>%  
+#   left_join(state_tbl, by = c("state", "state_name")) %>% 
+#   mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr><br>
+#                      <tr><td>New Cases/100k (7d Avg): %s</td></tr><br>
+#                      <tr><td>State Rank (Cases/100k 7d Avg): %s</td></tr><br>
+#                      <tr><td>Total Cases: %s</td></tr><br>
+#                      <tr><td>Total Deaths: %s</td></tr><br>
+#                      <tr><td>New Deaths/d/100k (7d Avg): %1.2f</td></tr><br>
+#                      <tr><td>CFR: %1.2f%%</td></tr><br>
+#                      <tr><td>Case Density: %1.1f%% of pop.</td></tr>",
+#                      toupper(state_name),  paste0(month.name[lubridate::month(date)], " ", lubridate::mday(date)),
+#                      comma(new_cases_state_7davg_100k, digits = 1), rank_newcases7davg, comma(tot_cases, digits = 0),
+#                      comma(tot_death, digits = 0), new_deaths_state_7davg_100k, tot_death/tot_cases*100, case_density_pct)) 
 
 
-cdc_currentdata <-
-  cdc_currentdata %>%  
-  # left_join(us_data,
-  #           by = c("state" = "stusps")) %>%  
-  left_join(state_pop_2019, by = "region") 
-
-
-cdc_currentdata <-
-  cdc_currentdata %>% 
-  group_by(state) %>%  
-  arrange(date) %>%  
-  mutate(case_density_pct = tot_cases/pop_estimate*100,
-         new_cases_state_7davg = round(RcppRoll::roll_meanr(new_case, 7), 1),
-         new_deaths_state_7davg = round(RcppRoll::roll_meanr(new_death, 7), 1),
-         new_deaths_state_7davg_100k = new_deaths_state_7davg/pop_estimate*100000,
-         new_cases_state_7davg_100k = new_cases_state_7davg/pop_estimate*100000
-  ) %>%  
-  ungroup()
-
-cdc_currentdata <-
-  cdc_currentdata %>% 
-  group_by(date) %>%  
-  mutate(rank_newcases7davg = rank(-new_cases_state_7davg_100k)) %>%  
-  ungroup()
-
-
-
-state_tbl <-
-  tibble(state_name = state.name,
-         state = state.abb)
-
-
-cdc_currentdata_2163 <-
-  cdc_currentdata %>%  
-  filter(date == max(date)) %>% 
-  left_join(us_data, by = c("state" = "stusps"))  %>% 
-  mutate(geometry = st_transform(geometry, 2163)) %>%  
-  left_join(state_tbl, by = c("state", "state_name")) %>% 
-  mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr><br>
-                     <tr><td>New Cases/100k (7d Avg): %s</td></tr><br>
-                     <tr><td>State Rank (Cases/100k 7d Avg): %s</td></tr><br>
-                     <tr><td>Total Cases: %s</td></tr><br>
-                     <tr><td>Total Deaths: %s</td></tr><br>
-                     <tr><td>New Deaths/d/100k (7d Avg): %1.2f</td></tr><br>
-                     <tr><td>CFR: %1.2f%%</td></tr><br>
-                     <tr><td>Case Density: %1.1f%% of pop.</td></tr>",
-                     toupper(state_name),  paste0(month.name[lubridate::month(date)], " ", lubridate::mday(date)),
-                     comma(new_cases_state_7davg_100k, digits = 1), rank_newcases7davg, comma(tot_cases, digits = 0),
-                     comma(tot_death, digits = 0), new_deaths_state_7davg_100k, tot_death/tot_cases*100, case_density_pct)) 
   # mutate(tt = sprintf("<tr><td><b><i>%s (%s)</i></b></td></tr>
   #                    <tr><td>New Cases/100k (7d Avg): %s</td></tr>
   #                    <tr><td>State Rank (Cases/100k 7d Avg): %s</td></tr>
@@ -2173,11 +2177,14 @@ Case data for these maps are taken from the [CDC](https://covid.cdc.gov/covid-da
 
 Formerly I used the [COVID Tracking project](https://covidtracking.com/data#state-tn), but this site is no longer updating data as of March 7, 2021.
 
+`r show_cdc <- exists("pl_us_cases_100k"); if(!show_cdc){"CDC Data Currently unavailable"}`
+
 ## New Cases
 
 *mouse over state for details*
 
-```{r us_newcases, fig.height=10, fig.width=12}
+```{r us_newcases, fig.height=10, fig.width=12, eval=show_cdc}
+
 
 max_newcaserate <- max(cdc_currentdata_2163$new_cases_state_7davg_100k[cdc_currentdata_2163$date == max(cdc_currentdata_2163$date)], na.rm = T)
                                                   
@@ -2205,7 +2212,7 @@ ggiraph::girafe(code = print( pl_us_cases_100k),
 
 ## US Heatmap
 
-```{r state_heatmap, fig.height=8, fig.width=10}
+```{r state_heatmap, fig.height=8, fig.width=10, eval=show_cdc}
 max_newcaserate_alldates <- max(cdc_currentdata$new_cases_state_7davg_100k, na.rm = T)
 
 state_order <- 
