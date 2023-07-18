@@ -1,4 +1,17 @@
-.Rproj.user
 .Rhistory
-.RData
 .Ruserdata
+*.Rproj
+
+# Session Data files
+.RData
+.RDataTmp
+
+# RStudio files
+.Rproj.user/
+
+# data files
+/data_cdc*
+*.csv
+*.xlsx
+*.XLSX
+
