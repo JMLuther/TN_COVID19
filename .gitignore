@@ -1,4 +1,8 @@
+.gitignore
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+
+data_cdc/
+data_tndoh/Public*.xlsx
