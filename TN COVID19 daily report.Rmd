@@ -730,7 +730,7 @@ nwss_dat_tn <-
 # CDC VARIANT DATA
 ## ├ Get Data ----
 # data source: https://covid.cdc.gov/covid-data-tracker/#variant-proportions
-# download.file("https://data.cdc.gov/api/views/jr58-6ysp/rows.csv?accessType=DOWNLOAD", 
+# download.file("https://data.cdc.gov/api/views/jr58-6ysp/rows.csv?accessType=DOWNLOAD",
 #               destfile = here::here("data_cdc/cdc_variant_nowcast.csv")) # contains NOW-CAST results- all US regions
 cdc_variants_data <- readr::read_csv(here::here("data_cdc/cdc_variant_nowcast.csv"))
 
@@ -1177,17 +1177,14 @@ cowplot::plot_grid(plot_state_trends,
 
 The Variant distribution is reported by 10 US Regions. Only data for the US total and  Region 4 (SouthEast) is shown here. CDC [NowCast data](https://covid.cdc.gov/covid-data-tracker/#variant-proportions) is used for this report.
 
+
 ```{r interactive_variants_plot, fig.height=4, fig.width=7, message=FALSE, warning=FALSE}
 pl_variants <-
   cdc_variants_data %>%
-  group_by(usa_or_hhsregion, week_ending) %>% 
-  filter(published_date == max(published_date, na.rm = T)) %>% ungroup() %>%  
-  filter(modeltype == "weighted",
-         time_interval == "weekly",
-         usa_or_hhsregion == "Region 4" | usa_or_hhsregion == "USA",
-         week_ending > lubridate::ymd(Sys.Date())-365) %>%  # limit last 180 days
-
-    ggplot(aes(week_ending, share,
+  filter(usa_or_hhsregion == "Region 4" | usa_or_hhsregion == "USA",
+         week_ending > lubridate::ymd(Sys.Date())-365,
+         published_date == max(published_date)) %>%  
+  ggplot(aes(week_ending, share,
              group = variant,
              fill = variant)) +
   ggiraph::geom_area_interactive(color = "grey50", alpha = 0.6, aes(tooltip = variant), hover_css = "stroke:red;stroke-width:inherit;") +
@@ -1199,7 +1196,7 @@ pl_variants <-
        title = "Variant Distribution in Southeastern US (CDC Region 4)",
        subtitle = "Hover over with mouse for details",
        fill = "Variant:") +
-    facet_wrap(~usa_or_hhsregion)
+  facet_wrap(~usa_or_hhsregion)
 
 
 ggiraph(code = {print(pl_variants)}, zoom_max = 1, width = .8, width_svg = 7, height_svg = 4)
