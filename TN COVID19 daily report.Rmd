@@ -26,13 +26,13 @@ output:
 
 ```{r setup, message=FALSE, warning=FALSE}
 library(tidyverse)
-# library(rvest)
-# library(albersusa)
 library(sf)
 library(leaflet)
 library(leafpop)
 library(formattable)
 library(ggiraph)
+# install.packages("devtools")
+# devtools::install_github("UrbanInstitute/urbnmapr")
 library(urbnmapr) # change to include AK/HI on map
 library(cowplot) 
 library(RcppRoll) 
@@ -42,6 +42,9 @@ library(patchwork)
 library(Hmisc)
 library(httr)
 library(rvest)
+# require(RSocrata); require(plyr); require(readr); require(here)
+# library(rvest)
+# library(albersusa)
 
 # Default ggplot theme
 theme_set(theme_bw() +
@@ -502,7 +505,7 @@ tndoh_demographics <-
   tndoh_demographics %>%  
   filter(category == "RACE",
          date == max(date)) %>%  
-  rename(race = cat_detail,
+  dplyr::rename(race = cat_detail,
          cases_byrace = cat_totalcases) %>%  
   mutate(date = lubridate::ymd(date),
          race = factor(race,
